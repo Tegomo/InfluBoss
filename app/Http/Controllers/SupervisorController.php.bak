@@ -1,0 +1,360 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Assignment;
+use App\Models\Campaign;
+use App\Models\Publication;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+
+class SupervisorController extends Controller
+{
+    /**
+     * Affiche la liste des superviseurs
+     */
+    public function index()
+    {
+        // Seuls les admin et super admin peuvent voir tous les superviseurs
+        Gate::authorize('viewAny', [User::class, 'supervisor']);
+        
+        $supervisors = User::where('role', 'supervisor')
+            ->withCount('influencers')
+            ->withCount('supervisorAssignments')
+            ->paginate(10);
+            
+        return view('supervisors.index', compact('supervisors'));
+    }
+
+    /**
+     * Affiche le formulaire de création d'un superviseur
+     */
+    public function create()
+    {
+        // Seuls les admin et super admin peuvent créer des superviseurs
+        Gate::authorize('create', [User::class, 'supervisor']);
+        
+        return view('supervisors.create');
+    }
+
+    /**
+     * Enregistre un nouveau superviseur dans la base de données
+     */
+    public function store(Request $request)
+    {
+        // Seuls les admin et super admin peuvent créer des superviseurs
+        Gate::authorize('create', [User::class, 'supervisor']);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+            'profile_photo' => 'nullable|image|max:2048',
+        ]);
+        
+        // Traiter la photo de profil si fournie
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $validated['profile_photo'] = $path;
+        }
+        
+        // Créer le superviseur
+        $supervisor = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'role' => 'supervisor',
+            'profile_photo' => $validated['profile_photo'] ?? null,
+            'is_active' => true,
+        ]);
+        
+        return redirect()->route('supervisors.show', $supervisor)
+            ->with('success', 'Superviseur créé avec succès.');
+    }
+
+    /**
+     * Affiche les détails d'un superviseur
+     */
+    public function show(User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('view', $supervisor);
+        
+        // Charger les influenceurs supervisés via la table pivot supervisor_influencer
+        $influencers = $supervisor->influencers;
+        
+        // Charger les campagnes supervisées via les assignments
+        $campaigns = Campaign::whereHas('assignments', function($query) use ($supervisor) {
+            $query->where('supervisor_id', $supervisor->id);
+        })->get();
+        
+        // On garde ces propriétés pour rétrocompatibilité
+        $supervisor->supervisedInfluencers = $influencers;
+        $supervisor->supervisedCampaigns = $campaigns;
+        
+        // Récupérer les dernières publications à vérifier
+        $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
+            $query->where('supervisor_id', $supervisor->id);
+        })
+        ->where('status', 'pending')
+        ->with(['influencer', 'assignment.campaign'])
+        ->latest('published_at')
+        ->take(5)
+        ->get();
+            
+        // Récupérer les influenceurs qui ne sont pas déjà assignés à ce superviseur
+        $unassignedInfluencers = User::where('role', 'influencer')
+            ->where('is_active', true)
+            ->whereDoesntHave('supervisors', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->orderBy('name')
+            ->get();
+            
+        return view('supervisors.show', compact('supervisor', 'influencers', 'campaigns', 'pendingPublications', 'unassignedInfluencers'));
+    }
+
+    /**
+     * Affiche le formulaire d'édition d'un superviseur
+     */
+    public function edit(User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('update', $supervisor);
+        
+        return view('supervisors.edit', compact('supervisor'));
+    }
+
+    /**
+     * Met à jour un superviseur dans la base de données
+     */
+    public function update(Request $request, User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('update', $supervisor);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $supervisor->id,
+            'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:8|confirmed',
+            'profile_photo' => 'nullable|image|max:2048',
+            'is_active' => 'required|boolean',
+        ]);
+        
+        // Traiter la photo de profil si fournie
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $supervisor->profile_photo = $path;
+        }
+        
+        // Mettre à jour le superviseur
+        $supervisor->name = $validated['name'];
+        $supervisor->email = $validated['email'];
+        $supervisor->phone = $validated['phone'] ?? $supervisor->phone;
+        
+        if (!empty($validated['password'])) {
+            $supervisor->password = Hash::make($validated['password']);
+        }
+        
+        $supervisor->is_active = $validated['is_active'];
+        $supervisor->save();
+        
+        return redirect()->route('supervisors.show', $supervisor)
+            ->with('success', 'Superviseur mis à jour avec succès.');
+    }
+
+    /**
+     * Supprime un superviseur
+     */
+    public function destroy(User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('delete', $supervisor);
+        
+        $supervisor->delete();
+        
+        return redirect()->route('supervisors.index')
+            ->with('success', 'Superviseur supprimé avec succès.');
+    }
+    
+    /**
+     * Affiche le tableau de bord d'un superviseur
+     */
+    public function dashboard()
+    {
+        // Cette méthode est accessible uniquement aux superviseurs connectés
+        if (Auth::user()->role !== 'supervisor') {
+            return redirect()->route('dashboard');
+        }
+        
+        $supervisor = Auth::user();
+        
+        // Récupérer les statistiques pour le tableau de bord
+        // Compter les influenceurs liés à ce superviseur via les assignments
+        $influencersCount = Assignment::where('supervisor_id', $supervisor->id)
+            ->distinct('influencer_id')
+            ->count();
+            
+        // Compter les campagnes distinctes liées à ce superviseur
+        $campaignsCount = Assignment::where('supervisor_id', $supervisor->id)
+            ->distinct('campaign_id')
+            ->count();
+        $pendingPublicationsCount = Publication::whereHas('assignment', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->where('status', 'pending')
+            ->count();
+            
+        // Récupérer les dernières publications à vérifier
+        $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->where('status', 'pending')
+            ->with(['influencer', 'assignment.campaign'])
+            ->latest('published_at')
+            ->take(10)
+            ->get();
+            
+        // Récupérer les dernières publications vérifiées
+        $recentVerifiedPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->where('status', 'verified')
+            ->with(['influencer', 'assignment.campaign', 'latestStats'])
+            ->latest('verified_at')
+            ->take(5)
+            ->get();
+            
+        return view('supervisors.dashboard', compact(
+            'supervisor', 
+            'influencersCount', 
+            'campaignsCount', 
+            'pendingPublicationsCount',
+            'pendingPublications',
+            'recentVerifiedPublications'
+        ));
+    }
+    
+    /**
+     * Affiche la liste des influenceurs supervisés
+     */
+    public function influencers(User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('view', $supervisor);
+        
+        $influencers = User::whereHas('influencerAssignments', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->withCount(['publications' => function($query) {
+                $query->where('status', 'verified');
+            }])
+            ->paginate(10);
+            
+        return view('supervisors.influencers', compact('supervisor', 'influencers'));
+    }
+    
+    /**
+     * Assigner un influenceur à un superviseur
+     */
+    public function assignInfluencer(Request $request, User $supervisor)
+    {
+        // Vérifier qu'il s'agit bien d'un superviseur
+        if ($supervisor->role !== 'supervisor') {
+            abort(404);
+        }
+        
+        // Vérifier les droits d'accès
+        Gate::authorize('update', $supervisor);
+        
+        $validated = $request->validate([
+            'influencer_id' => 'required|exists:users,id',
+        ]);
+        
+        // Vérifier que l'utilisateur sélectionné est bien un influenceur
+        $influencer = User::where('id', $validated['influencer_id'])
+            ->where('role', 'influencer')
+            ->firstOrFail();
+        
+        // Vérifier si l'influenceur a déjà un superviseur
+        $existingAssignment = DB::table('supervisor_influencer')
+            ->where('influencer_id', $influencer->id)
+            ->first();
+            
+        if ($existingAssignment) {
+            // Si l'influenceur a déjà un superviseur, on le réassigne au nouveau superviseur
+            DB::table('supervisor_influencer')
+                ->where('influencer_id', $influencer->id)
+                ->update([
+                    'supervisor_id' => $supervisor->id,
+                    'updated_at' => now()
+                ]);
+        } else {
+            // Sinon on crée une nouvelle assignation
+            DB::table('supervisor_influencer')->insert([
+                'supervisor_id' => $supervisor->id,
+                'influencer_id' => $influencer->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        return redirect()->route('supervisors.show', $supervisor)
+            ->with('success', "L'influenceur {$influencer->name} a été assigné avec succès au superviseur.");
+    }
+
+    /**
+     * Affiche la liste des publications en attente de vérification
+     */
+    public function pendingPublications()
+    {
+        // Cette méthode est accessible uniquement aux superviseurs connectés
+        if (Auth::user()->role !== 'supervisor') {
+            return redirect()->route('dashboard');
+        }
+        
+        $supervisor = Auth::user();
+        
+        $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
+                $query->where('supervisor_id', $supervisor->id);
+            })
+            ->where('status', 'pending')
+            ->with(['influencer', 'assignment.campaign', 'content'])
+            ->latest('published_at')
+            ->paginate(10);
+            
+        return view('supervisors.pending-publications', compact('pendingPublications'));
+    }
+}
