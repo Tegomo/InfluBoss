@@ -81,7 +81,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-4 text-bold">Budget:</div>
-                        <div class="col-md-8">{{ $campaign->budget ? number_format($campaign->budget, 2, ',', ' ') . ' €' : 'Non défini' }}</div>
+                        <div class="col-md-8">{{ $campaign->budget ? number_format($campaign->budget, 2, ',', ' ') . ' FCFA' : 'Non défini' }}</div>
                     </div>
                     <hr>
                     <div class="row">

@@ -53,7 +53,7 @@ class InfluencerImportExportController extends Controller
             
             // En-têtes du CSV
             fputcsv($file, [
-                'ID', 'Nom', 'Email', 'Téléphone', 'Instagram', 'Facebook', 'YouTube', 
+                'ID', 'Nom', 'Pseudo', 'Email', 'Téléphone', 'Date de naissance', 'Ville', 'Instagram', 'Facebook', 'YouTube', 
                 'TikTok', 'Twitter', 'LinkedIn', 'Actif', 'Date de création'
             ]);
             
@@ -63,8 +63,11 @@ class InfluencerImportExportController extends Controller
                 fputcsv($file, [
                     $user->id,
                     $user->name,
+                    $user->pseudo ?? '',
                     $user->email,
                     $user->phone ?? '',
+                    $user->birthdate ? $user->birthdate->format('d/m/Y') : '',
+                    $user->city ?? '',
                     $user->instagram_handle ?? '',
                     $user->facebook_handle ?? '',
                     $user->youtube_handle ?? '',
@@ -107,13 +110,13 @@ class InfluencerImportExportController extends Controller
             
             // En-têtes du CSV
             fputcsv($file, [
-                'nom', 'email', 'telephone', 'instagram', 'facebook', 'youtube', 
+                'nom', 'pseudo', 'email', 'telephone', 'date_naissance', 'ville', 'instagram', 'facebook', 'youtube', 
                 'tiktok', 'twitter', 'linkedin', 'actif'
             ]);
             
             // Une ligne d'exemple (optionnelle)
             fputcsv($file, [
-                'Nom Influenceur', 'email@exemple.com', '+33600000000', 'instagram_handle',
+                'Nom Influenceur', 'pseudo_influenceur', 'email@exemple.com', '+33600000000', '15/01/1990', 'Paris', 'instagram_handle',
                 'facebook_handle', 'youtube_handle', 'tiktok_handle', 'twitter_handle',
                 'linkedin_handle', 'Oui'
             ]);
@@ -219,13 +222,32 @@ class InfluencerImportExportController extends Controller
                 // Génération d'un mot de passe aléatoire
                 $temporaryPassword = substr(md5(mt_rand()), 0, 8);
                 
+                // Traitement de la date de naissance si fournie
+                $birthdate = null;
+                if (!empty($rowData['date_naissance'])) {
+                    try {
+                        $birthdate = \Carbon\Carbon::createFromFormat('d/m/Y', $rowData['date_naissance']);
+                    } catch (\Exception $e) {
+                        // Si le format n'est pas correct, on essaie un autre format courant
+                        try {
+                            $birthdate = \Carbon\Carbon::parse($rowData['date_naissance']);
+                        } catch (\Exception $e) {
+                            // Si toujours pas valide, on ignore la date
+                            $birthdate = null;
+                        }
+                    }
+                }
+                
                 // Créer l'utilisateur
                 $user = new User([
                     'name' => $rowData['nom'],
+                    'pseudo' => $rowData['pseudo'] ?? null,
                     'email' => $rowData['email'],
                     'password' => Hash::make($temporaryPassword),
                     'role' => 'influencer',
                     'phone' => $rowData['telephone'] ?? null,
+                    'birthdate' => $birthdate,
+                    'city' => $rowData['ville'] ?? null,
                     'instagram_handle' => $rowData['instagram'] ?? null,
                     'facebook_handle' => $rowData['facebook'] ?? null,
                     'youtube_handle' => $rowData['youtube'] ?? null,

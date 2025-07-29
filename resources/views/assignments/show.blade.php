@@ -190,7 +190,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Compensation:</label>
-                                <div>{{ $assignment->compensation ? number_format($assignment->compensation, 2, ',', ' ') . ' €' : 'Non définie' }}</div>
+                                <div>{{ $assignment->compensation ? number_format($assignment->compensation, 2, ',', ' ') . ' FCFA' : 'Non définie' }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
