@@ -115,6 +115,9 @@ class InfluencerController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
+            'pseudo' => $validated['pseudo'] ?? null,
+            'birthdate' => $validated['birthdate'] ?? null,
+            'city' => $validated['city'] ?? null,
             'password' => Hash::make($validated['password']),
             'role' => 'influencer',
             'bio' => $validated['bio'] ?? null,
@@ -210,6 +213,9 @@ class InfluencerController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $influencer->id,
             'phone' => 'nullable|string|max:20',
+            'pseudo' => 'nullable|string|max:255',
+            'birthdate' => 'nullable|date',
+            'city' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
             'bio' => 'nullable|string',
             'social_links' => 'nullable|array',
@@ -248,6 +254,9 @@ class InfluencerController extends Controller
         $influencer->name = $validated['name'];
         $influencer->email = $validated['email'];
         $influencer->phone = $validated['phone'] ?? $influencer->phone;
+        $influencer->pseudo = $validated['pseudo'] ?? $influencer->pseudo;
+        $influencer->birthdate = $validated['birthdate'] ?? $influencer->birthdate;
+        $influencer->city = $validated['city'] ?? $influencer->city;
         
         if (!empty($validated['password'])) {
             $influencer->password = Hash::make($validated['password']);

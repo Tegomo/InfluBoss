@@ -86,7 +86,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="budget">Budget (€)</label>
+                            <label for="budget">Budget (FCFA)</label>
                             <input type="number" step="0.01" class="form-control @error('budget') is-invalid @enderror" 
                                 id="budget" name="budget" value="{{ old('budget', $campaign->budget) }}">
                             @error('budget')

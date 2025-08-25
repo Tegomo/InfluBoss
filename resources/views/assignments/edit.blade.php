@@ -139,7 +139,7 @@
                             
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="compensation">Compensation (€)</label>
+                                    <label for="compensation">Compensation (FCFA)</label>
                                     <input type="number" step="0.01" class="form-control @error('compensation') is-invalid @enderror" 
                                         id="compensation" name="compensation" value="{{ old('compensation', $assignment->compensation) }}" placeholder="0.00">
                                     @error('compensation')
