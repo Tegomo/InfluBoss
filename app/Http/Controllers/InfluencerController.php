@@ -44,10 +44,17 @@ class InfluencerController extends Controller
         }
         
         // Si c'est un superviseur, ne montrer que les influenceurs qu'il supervise
-        if (Auth::user()->isSupervisor()) {
-            $influencersIds = Auth::user()->supervisedInfluencers()->pluck('users.id');
+        if (Auth::user()->role === 'supervisor') {
+            // Récupérer les IDs des influenceurs assignés à ce superviseur
+            $influencersIds = Assignment::where('supervisor_id', Auth::id())
+                ->distinct('influencer_id')
+                ->pluck('influencer_id')
+                ->toArray();
             $query->whereIn('id', $influencersIds);
         }
+        
+        // Trier les influenceurs du plus récent au plus ancien
+        $query->orderBy('created_at', 'desc');
         
         $influencers = $query->paginate(10);
         
@@ -158,9 +165,13 @@ class InfluencerController extends Controller
         
         // Calculer les statistiques globales
         $totalPublications = $publications->count();
-        $totalEngagement = $influencer->publications()
+        // Calculer l'engagement total en additionnant les statistiques individuelles
+        $stats = $influencer->publications()
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
-            ->sum(\DB::raw('stats.likes + stats.comments + stats.shares + stats.saves'));
+            ->select('stats.likes', 'stats.comments', 'stats.shares', 'stats.saves')
+            ->get();
+            
+        $totalEngagement = $stats->sum('likes') + $stats->sum('comments') + $stats->sum('shares') + $stats->sum('saves');
         $avgEngagementRate = $influencer->publications()
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
             ->avg('stats.engagement_rate') ?? 0;

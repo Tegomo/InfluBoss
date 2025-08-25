@@ -42,7 +42,7 @@ Superviseur: {{ $supervisor->name }}
                         <b>Date de naissance</b> <a class="float-right">{{ $supervisor->birthdate ? $supervisor->birthdate->format('d/m/Y') : 'Non renseigné' }}</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Influenceurs supervisés</b> <a class="float-right">{{ $influencers->count() }}</a>
+                        <b>Ambassadeurs supervisés</b> <a class="float-right">{{ $influencers->count() }}</a>
                     </li>
                     <li class="list-group-item">
                         <b>Campagnes gérées</b> <a class="float-right">{{ $campaigns->count() }}</a>
@@ -73,7 +73,7 @@ Superviseur: {{ $supervisor->name }}
         <div class="card">
             <div class="card-header p-2">
                 <ul class="nav nav-pills">
-                    <li class="nav-item"><a class="nav-link active" href="#influencers" data-toggle="tab">Influenceurs supervisés</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#influencers" data-toggle="tab">Ambassadeurs supervisés</a></li>
                     <li class="nav-item"><a class="nav-link" href="#campaigns" data-toggle="tab">Campagnes gérées</a></li>
                 </ul>
             </div><!-- /.card-header -->
@@ -81,10 +81,10 @@ Superviseur: {{ $supervisor->name }}
                 <div class="tab-content">
                     <div class="active tab-pane" id="influencers">
                         <div class="d-flex justify-content-between mb-3">
-                            <h4 class="mb-0">Liste des influenceurs</h4>
+                            <h4 class="mb-0">Liste des Ambassadeurs</h4>
                             @can('update', $supervisor)
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignInfluencerModal">
-                                <i class="fas fa-user-plus mr-1"></i> Assigner un influenceur
+                                <i class="fas fa-user-plus mr-1"></i> Assigner un embassadeur
                             </button>
                             @endcan
                         </div>
@@ -135,7 +135,7 @@ Superviseur: {{ $supervisor->name }}
                         </div>
                         @else
                         <div class="alert alert-info">
-                            Ce superviseur ne gère actuellement aucun influenceur.
+                            Ce superviseur ne gère actuellement aucun embassadeur.
                         </div>
                         @endif
                     </div>
@@ -237,8 +237,8 @@ Superviseur: {{ $supervisor->name }}
                             @endforeach
                         </select>
                         <small class="form-text text-muted">
-                            Cette liste contient uniquement les influenceurs qui ne sont pas encore assignés à un superviseur.
-                            Pour réassigner un influenceur déjà attribué à un autre superviseur, utilisez l'écran de gestion de cet influenceur.
+                            Cette liste contient uniquement les Ambassadeurs qui ne sont pas encore assignés à un superviseur.
+                            Pour réassigner un Embassadeur déjà attribué à un autre superviseur, utilisez l'écran de gestion de cet Embassadeur.
                         </small>
                     </div>
                 </div>

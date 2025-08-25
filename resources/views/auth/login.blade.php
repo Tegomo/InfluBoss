@@ -16,7 +16,7 @@
             <div class="bg-white p-8 rounded-lg shadow-lg">
                 <div class="text-center mb-8">
                     <h1 class="text-3xl font-bold text-orange-600">InfluBoss</h1>
-                    <p class="mt-2 text-gray-600">Plateforme de gestion d'influenceurs</p>
+                    <p class="mt-2 text-gray-600">Plateforme de gestion d'Ambassadeurs</p>
                 </div>
 
                 <form method="POST" action="{{ route('login') }}">

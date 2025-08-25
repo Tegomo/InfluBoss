@@ -47,6 +47,9 @@ class CampaignApiController extends Controller
         }
         // Admin et super_admin voient tout
         
+        // Trier les campagnes du plus récent au plus ancien
+        $query->orderBy('created_at', 'desc');
+        
         // Pagination des résultats
         $perPage = $request->input('per_page', 15);
         $campaigns = $query->paginate($perPage);

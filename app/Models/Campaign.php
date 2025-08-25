@@ -25,6 +25,7 @@ class Campaign extends Model
         'platforms',
         'target_audience',
         'budget',
+        'objectives',
         'created_by',
         'updated_by',
     ];

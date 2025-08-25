@@ -98,7 +98,7 @@
                                             <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-influencers">Désélectionner tout</button>
                                         </div>
                                     </div>
-                                    <small class="form-text text-muted">Vous pouvez sélectionner plusieurs influenceurs pour créer plusieurs missions en une seule fois.</small>
+                                    <small class="form-text text-muted">Vous pouvez sélectionner plusieurs Ambassadeurs pour créer plusieurs missions en une seule fois.</small>
                                     @error('influencer_ids')
                                         <span class="invalid-feedback d-block">{{ $message }}</span>
                                     @enderror
@@ -366,7 +366,7 @@ $(function () {
             });
             
             $('#influencer_ids').select2({
-                placeholder: 'Sélectionner un ou plusieurs influenceurs',
+                placeholder: 'Sélectionner un ou plusieurs Ambassadeurs',
                 allowClear: true,
                 multiple: true
             });

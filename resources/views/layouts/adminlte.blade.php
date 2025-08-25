@@ -114,7 +114,7 @@
                     <li class="nav-item">
                         <a href="{{ route('influencers.index') }}" class="nav-link {{ request()->routeIs('influencers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i>
-                            <p>Influenceurs</p>
+                            <p>Ambassadeurs</p>
                         </a>
                     </li>
                     @endif

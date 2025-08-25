@@ -94,7 +94,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Plateforme</th>
-                                    <th>Influenceur</th>
+                                    <th>Embassadeur</th>
                                     <th>Campagne</th>
                                     <th>URL</th>
                                     <th>Statut</th>

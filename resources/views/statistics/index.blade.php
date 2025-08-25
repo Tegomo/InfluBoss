@@ -47,7 +47,7 @@
                             <div class="info-box bg-success">
                                 <span class="info-box-icon"><i class="fas fa-user-tag"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Influenceurs</span>
+                                    <span class="info-box-text">Ambassadeurs</span>
                                     <span class="info-box-number">{{ $userStats['influencers'] }}</span>
                                 </div>
                             </div>
@@ -405,7 +405,7 @@
         <div class="col-md-6">
             <div class="card card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Top 10 influenceurs</h3>
+                    <h3 class="card-title">Top 10 Ambassadeurs</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -454,7 +454,7 @@
                             @foreach($topSupervisors as $supervisor)
                             <tr>
                                 <td>{{ $supervisor->name }}</td>
-                                <td>{{ $supervisor->supervised_assignments_count }}</td>
+                                <td>{{ $supervisor->supervisor_assignments_count }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -488,7 +488,7 @@
                         <tbody>
                             @foreach($topCampaigns as $campaign)
                             <tr>
-                                <td>{{ $campaign->title }}</td>
+                                <td>{{ $campaign->name }}</td>
                                 <td>{{ $campaign->publications_count }}</td>
                                 <td>
                                     @if($campaign->status == 'active')

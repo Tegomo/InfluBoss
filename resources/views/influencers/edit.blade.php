@@ -5,7 +5,7 @@ Modifier l'influenceur : {{ $influencer->name }}
 @endsection
 
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Influenceurs</a></li>
+<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Ambassadeurs</a></li>
 <li class="breadcrumb-item"><a href="{{ route('influencers.show', $influencer) }}">{{ $influencer->name }}</a></li>
 <li class="breadcrumb-item active">Modifier</li>
 @endsection

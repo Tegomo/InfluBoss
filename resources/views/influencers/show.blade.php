@@ -1,11 +1,11 @@
 @extends('layouts.adminlte')
 
 @section('title')
-Influenceur: {{ $influencer->name }}
+Embassadeur: {{ $influencer->name }}
 @endsection
 
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Influenceurs</a></li>
+<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Ambassadeurs</a></li>
 <li class="breadcrumb-item active">{{ $influencer->name }}</li>
 @endsection
 
@@ -26,7 +26,7 @@ Influenceur: {{ $influencer->name }}
                 </div>
 
                 <h3 class="profile-username text-center">{{ $influencer->name }}</h3>
-                <p class="text-muted text-center">Influenceur</p>
+                <p class="text-muted text-center">Embassadeur</p>
 
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">

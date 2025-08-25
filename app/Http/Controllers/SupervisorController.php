@@ -25,6 +25,7 @@ class SupervisorController extends Controller
         $supervisors = User::where('role', 'supervisor')
             ->withCount('influencers')
             ->withCount('supervisorAssignments')
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
             
         return view('supervisors.index', compact('supervisors'));

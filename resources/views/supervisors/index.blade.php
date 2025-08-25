@@ -57,7 +57,7 @@ Liste des superviseurs
                     <th>Email</th>
                     <th>Téléphone</th>
                     <th>Ville</th>
-                    <th>Influenceurs supervisés</th>
+                    <th>Ambassadeurs supervisés</th>
                     <th>Statut</th>
                     <th class="text-right">Actions</th>
                 </tr>
@@ -82,7 +82,7 @@ Liste des superviseurs
                         @php
                             $influencerCount = $supervisor->supervisedInfluencers ? $supervisor->supervisedInfluencers->count() : 0;
                         @endphp
-                        <span class="badge badge-info">{{ $influencerCount }} influenceur(s)</span>
+                        <span class="badge badge-info">{{ $influencerCount }} embassadeur(s)</span>
                     </td>
                     <td>
                         @if($supervisor->is_active)

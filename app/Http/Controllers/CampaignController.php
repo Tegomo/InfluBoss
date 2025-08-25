@@ -27,13 +27,16 @@ class CampaignController extends Controller
             $query->whereJsonContains('platforms', $request->platform);
         }
         
+        // Trier les campagnes du plus récent au plus ancien
+        $query->orderBy('created_at', 'desc');
+        
         // Si l'utilisateur est un influenceur, montrer uniquement les campagnes auxquelles il est assigné
         if (Auth::user()->isInfluencer()) {
-            $campaigns = Auth::user()->assignedCampaigns()->with('contents')->paginate(10);
+            $campaigns = Auth::user()->assignedCampaigns()->with('contents')->orderBy('created_at', 'desc')->paginate(10);
         } 
         // Si l'utilisateur est un superviseur, montrer uniquement les campagnes qu'il supervise
         elseif (Auth::user()->isSupervisor()) {
-            $campaigns = Auth::user()->supervisedCampaigns()->with('contents')->paginate(10);
+            $campaigns = Auth::user()->supervisedCampaigns()->with('contents')->orderBy('created_at', 'desc')->paginate(10);
         } 
         // Pour les administrateurs et super admin, montrer toutes les campagnes
         else {

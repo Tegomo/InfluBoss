@@ -106,7 +106,7 @@
                                 <div class="card-body p-0">
                                     <table class="table">
                                         <tr>
-                                            <td width="30%">Influenceur:</td>
+                                            <td width="30%">Embassadeur:</td>
                                             <td>
                                                 <a href="{{ route('influencers.show', $publication->influencer) }}">
                                                     {{ $publication->influencer->name ?? 'Non défini' }}

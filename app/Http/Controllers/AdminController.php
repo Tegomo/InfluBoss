@@ -73,6 +73,7 @@ class AdminController extends Controller
         $administrators = User::where('role', 'admin')
             ->orWhere('role', 'super_admin')
             ->orderBy('role')
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
             
         return view('admin.administrators', compact('administrators'));

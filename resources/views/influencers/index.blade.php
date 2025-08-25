@@ -1,21 +1,21 @@
 @extends('layouts.adminlte')
 
 @section('title')
-Liste des influenceurs
+Liste des Ambassadeurs
 @endsection
 
 @section('breadcrumb')
-<li class="breadcrumb-item active">Influenceurs</li>
+<li class="breadcrumb-item active">Ambassadeurs</li>
 @endsection
 
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Liste des influenceurs</h3>
+        <h3 class="card-title">Liste des Ambassadeurs</h3>
         <div class="card-tools">
             @can('create', \App\Models\User::class)
             <a href="{{ route('influencers.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus mr-1"></i> Ajouter un influenceur
+                <i class="fas fa-plus mr-1"></i> Ajouter un Embassadeur
             </a>
             @endcan
             
