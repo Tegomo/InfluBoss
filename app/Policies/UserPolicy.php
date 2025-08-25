@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class UserPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Détermine si l'utilisateur peut voir la liste des utilisateurs
+     */
+    public function viewAny(User $user): bool
+    {
+        return in_array($user->role, ['super_admin', 'admin', 'supervisor']);
+    }
+
+    /**
+     * Détermine si l'utilisateur peut voir un utilisateur spécifique
+     */
+    public function view(User $user, User $model): bool
+    {
+        return in_array($user->role, ['super_admin', 'admin', 'supervisor']) || $user->id === $model->id;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut créer un nouveau utilisateur
+     *
+     * @param  \App\Models\User  $user
+     * @param  string|null  $role
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function create(User $user, $role = null)
+    {
+        // Si aucun rôle n'est spécifié, autoriser les admin et super_admin à créer des utilisateurs
+        if ($role === null) {
+            return in_array($user->role, ['super_admin', 'admin']);
+        }
+        
+        // Seuls les super admin peuvent créer des admin
+        if ($role === 'admin' && $user->role === 'super_admin') {
+            return true;
+        }
+        
+        // Les admin et super admin peuvent créer des superviseurs et des influenceurs
+        if (in_array($role, ['supervisor', 'influencer']) && in_array($user->role, ['admin', 'super_admin'])) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut mettre à jour le profil d'un autre utilisateur.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\User  $model
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function update(User $user, User $model)
+    {
+        // L'utilisateur peut mettre à jour son propre profil
+        if ($user->id === $model->id) {
+            return true;
+        }
+        
+        // Les super admin peuvent tout mettre à jour
+        if ($user->role === 'super_admin') {
+            return true;
+        }
+        
+        // Les admin peuvent mettre à jour tous les profils sauf les super admin
+        if ($user->role === 'admin' && $model->role !== 'super_admin') {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut supprimer un autre utilisateur.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\User  $model
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function delete(User $user, User $model)
+    {
+        // On ne peut pas se supprimer soi-même par cette méthode
+        if ($user->id === $model->id) {
+            return false;
+        }
+        
+        // Les super admin peuvent tout supprimer
+        if ($user->role === 'super_admin') {
+            return true;
+        }
+        
+        // Les admin peuvent supprimer les superviseurs et les influenceurs
+        if ($user->role === 'admin' && in_array($model->role, ['supervisor', 'influencer'])) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Détermine si l'utilisateur peut assigner des campagnes à un influenceur.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\User  $influencer
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function assignCampaigns(User $user, User $influencer)
+    {
+        // Vérifier que c'est bien un influenceur
+        if ($influencer->role !== 'influencer') {
+            return false;
+        }
+        
+        // Les admin et super admin peuvent assigner des campagnes
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            return true;
+        }
+        
+        return false;
+    }
+}
