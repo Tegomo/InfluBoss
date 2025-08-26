@@ -80,9 +80,9 @@ Liste des superviseurs
                     <td>{{ $supervisor->city ?? 'Non renseigné' }}</td>
                     <td>
                         @php
-                            $influencerCount = $supervisor->supervisedInfluencers ? $supervisor->supervisedInfluencers->count() : 0;
+                            $influencerCount = $supervisor->influencers ? $supervisor->influencers->count() : 0;
                         @endphp
-                        <span class="badge badge-info">{{ $influencerCount }} embassadeur(s)</span>
+                        <span class="badge badge-info">{{ $influencerCount }} ambassadeur(s)</span>
                     </td>
                     <td>
                         @if($supervisor->is_active)

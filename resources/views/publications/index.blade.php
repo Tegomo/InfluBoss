@@ -42,7 +42,7 @@
                                         <option value="">Toutes</option>
                                         @foreach($campaigns as $campaign)
                                             <option value="{{ $campaign->id }}" {{ request('campaign_id') == $campaign->id ? 'selected' : '' }}>
-                                                {{ $campaign->name }}
+                                                {{ $campaign->title }}
                                             </option>
                                         @endforeach
                                     </select>

@@ -175,6 +175,7 @@ class ContentController extends Controller
             'guidelines' => 'nullable|array',
             'status' => 'required|in:draft,approved,archived',
             'publication_date' => 'nullable|date',
+            'tags' => 'nullable|string|max:255',
         ]);
         
         // Traiter le fichier si fourni

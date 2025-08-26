@@ -15,17 +15,33 @@
             </ol>
         </div>
     </div>
+    
 </div>
 @endsection
 
 @section('content')
+
 <div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="btn-group float-right gap-2" role="group">
+                <a href="{{ route('admin.statistics.export') }}" class="btn btn-success">
+                    <i class="fas fa-file-excel mr-1"></i> Exporter Excel
+                </a>
+                <a href="{{ route('admin.statistics.export-pdf') }}" class="btn btn-danger">
+                    <i class="fas fa-file-pdf mr-1"></i> Exporter PDF
+                </a>
+            </div>
+        </div>
+    </div>
+    <br>
+
     <!-- Statistiques des utilisateurs -->
     <div class="row">
         <div class="col-md-12">
             <div class="card card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Statistiques des utilisateurs</h3>
+                    <h3 class="card-title"><strong>Statistiques des utilisateurs</strong></h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -34,7 +50,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 col-sm-6 col-12">
+                        <div class="col-md-4 col-sm-6 col-12">
                             <div class="info-box bg-info">
                                 <span class="info-box-icon"><i class="fas fa-users"></i></span>
                                 <div class="info-box-content">
@@ -43,7 +59,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6 col-12">
+                        <div class="col-md-4 col-sm-6 col-12">
                             <div class="info-box bg-success">
                                 <span class="info-box-icon"><i class="fas fa-user-tag"></i></span>
                                 <div class="info-box-content">
@@ -52,7 +68,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6 col-12">
+                        <div class="col-md-4 col-sm-6 col-12">
                             <div class="info-box bg-warning">
                                 <span class="info-box-icon"><i class="fas fa-user-tie"></i></span>
                                 <div class="info-box-content">
@@ -61,7 +77,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6 col-12">
+                        <!--<div class="col-md-3 col-sm-6 col-12">
                             <div class="info-box bg-danger">
                                 <span class="info-box-icon"><i class="fas fa-user-shield"></i></span>
                                 <div class="info-box-content">
@@ -69,7 +85,7 @@
                                     <span class="info-box-number">{{ $userStats['admins'] }}</span>
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
                     </div>
                     <div class="row mt-4">
                         <div class="col-md-6">
@@ -91,11 +107,11 @@
                                     <p><strong>Utilisateurs actifs (30 derniers jours):</strong> {{ $userStats['recentlyActive'] }}</p>
                                     <div class="progress">
                                         <div class="progress-bar bg-success" role="progressbar" 
-                                            style="width: {{ ($userStats['recentlyActive'] / $userStats['total']) * 100 }}%" 
-                                            aria-valuenow="{{ ($userStats['recentlyActive'] / $userStats['total']) * 100 }}" 
+                                            style="width: {{ $userStats['total'] > 0 ? ($userStats['recentlyActive'] / $userStats['total']) * 100 : 0 }}%" 
+                                            aria-valuenow="{{ $userStats['total'] > 0 ? ($userStats['recentlyActive'] / $userStats['total']) * 100 : 0 }}" 
                                             aria-valuemin="0" 
                                             aria-valuemax="100">
-                                            {{ round(($userStats['recentlyActive'] / $userStats['total']) * 100) }}%
+                                            {{ $userStats['total'] > 0 ? round(($userStats['recentlyActive'] / $userStats['total']) * 100) : 0 }}%
                                         </div>
                                     </div>
                                 </div>

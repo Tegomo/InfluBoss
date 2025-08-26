@@ -220,7 +220,7 @@ Superviseur: {{ $supervisor->name }}
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="assignInfluencerModalLabel">Assigner un influenceur à {{ $supervisor->name }}</h5>
+                <h5 class="modal-title" id="assignInfluencerModalLabel">Assigner des ambassadeur à {{ $supervisor->name }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -229,14 +229,26 @@ Superviseur: {{ $supervisor->name }}
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="influencer_id">Sélectionner un influenceur</label>
-                        <select class="form-control select2" id="influencer_id" name="influencer_id" required>
-                            <option value="">-- Choisir un influenceur --</option>
-                            @foreach($unassignedInfluencers as $influencer)
-                                <option value="{{ $influencer->id }}">{{ $influencer->name }} ({{ $influencer->email }})</option>
-                            @endforeach
-                        </select>
-                        <small class="form-text text-muted">
+                        <label>Sélectionner des ambassadeurs</label>
+                        @if($unassignedInfluencers->count() > 0)
+                            <div class="mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllInfluencers">Tout sélectionner</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllInfluencers">Tout désélectionner</button>
+                            </div>
+                        @endif
+                        <div class="influencer-checkbox-container" style="max-height: 300px; overflow-y: auto;">
+                            @if($unassignedInfluencers->count() > 0)
+                                @foreach($unassignedInfluencers as $influencer)
+                                    <div class="custom-control custom-checkbox mb-2">
+                                        <input type="checkbox" class="custom-control-input influencer-checkbox" id="influencer_{{ $influencer->id }}" name="influencer_ids[]" value="{{ $influencer->id }}">
+                                        <label class="custom-control-label" for="influencer_{{ $influencer->id }}">{{ $influencer->name }} ({{ $influencer->email }})</label>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-muted">Aucun ambassadeur disponible pour l'assignation.</p>
+                            @endif
+                        </div>
+                        <small class="form-text text-muted mt-2">
                             Cette liste contient uniquement les Ambassadeurs qui ne sont pas encore assignés à un superviseur.
                             Pour réassigner un Embassadeur déjà attribué à un autre superviseur, utilisez l'écran de gestion de cet Embassadeur.
                         </small>
@@ -256,10 +268,20 @@ Superviseur: {{ $supervisor->name }}
 @push('scripts')
 <script>
     $(document).ready(function() {
+        // Initialisation de Select2 (maintenu pour rétrocompatibilité)
         $('.select2').select2({
             theme: 'bootstrap4',
             placeholder: "-- Choisir un influenceur --",
             allowClear: true
+        });
+        
+        // Gestion des boutons Tout sélectionner/désélectionner
+        $('#selectAllInfluencers').click(function() {
+            $('.influencer-checkbox').prop('checked', true);
+        });
+        
+        $('#deselectAllInfluencers').click(function() {
+            $('.influencer-checkbox').prop('checked', false);
         });
     });
 </script>

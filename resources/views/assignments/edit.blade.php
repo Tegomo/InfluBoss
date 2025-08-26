@@ -200,7 +200,7 @@
                                         <select class="form-control select2 @error('platforms') is-invalid @enderror" multiple 
                                             id="platforms" name="platforms[]">
                                             @php
-                                                $currentPlatforms = old('platforms', $assignment->platforms ? json_decode($assignment->platforms) : []);
+                                                $currentPlatforms = old('platforms', $assignment->platforms ? (is_string($assignment->platforms) ? json_decode($assignment->platforms) : $assignment->platforms) : []);
                                             @endphp
                                             <option value="instagram" {{ in_array('instagram', $currentPlatforms) ? 'selected' : '' }}>Instagram</option>
                                             <option value="facebook" {{ in_array('facebook', $currentPlatforms) ? 'selected' : '' }}>Facebook</option>
@@ -335,7 +335,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var campaignId = "{{ $assignment->campaign_id }}";
         var influencerId = "{{ $assignment->influencer_id }}";
         var supervisorId = "{{ $assignment->supervisor_id ?: '' }}";
-        var platformsJson = '{{ $assignment->platforms ?: "[]" }}';
+        @if(is_string($assignment->platforms))
+            var platformsJson = '{{ $assignment->platforms ?: "[]" }}';
+        @else
+            var platformsJson = '{{ json_encode($assignment->platforms ?: []) }}';
+        @endif
         
         if (campaignId) {
             $('#campaign_id').val(campaignId).trigger('change');

@@ -151,6 +151,8 @@ Route::middleware(['auth'])->group(function () {
         
         // Statistiques globales
         Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
+        Route::get('/statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
+        Route::get('/statistics/export-pdf', [StatisticsController::class, 'exportPdf'])->name('statistics.export-pdf');
     });
 });
 
