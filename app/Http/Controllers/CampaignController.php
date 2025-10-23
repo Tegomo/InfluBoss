@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\User;
+use App\Models\Assignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -31,14 +32,25 @@ class CampaignController extends Controller
         $query->orderBy('created_at', 'desc');
         
         // Si l'utilisateur est un influenceur, montrer uniquement les campagnes auxquelles il est assigné
-        if (Auth::user()->isInfluencer()) {
-            $campaigns = Auth::user()->assignedCampaigns()->with('contents')->orderBy('created_at', 'desc')->paginate(10);
+        //var_dump("role de l'utilisateur connecté ".Auth::user()->role);
+        if (Auth::user()->role == "influencer") {
+            // Récupérer les IDs des campagnes assignées à cet influenceur
+            $campaignIds = \App\Models\Assignment::where('influencer_id', Auth::id())
+                ->distinct('campaign_id')
+                ->pluck('campaign_id')
+                ->toArray();
+                
+            if (empty($campaignIds)) {
+                // Si aucune campagne n'est assignée, utiliser une requête qui ne retourne rien
+                $campaigns = Campaign::whereRaw('1 = 0')->paginate(10);
+            } else {
+                $campaigns = Campaign::whereIn('id', $campaignIds)
+                    ->with('contents')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
+            }
         } 
-        // Si l'utilisateur est un superviseur, montrer uniquement les campagnes qu'il supervise
-        elseif (Auth::user()->isSupervisor()) {
-            $campaigns = Auth::user()->supervisedCampaigns()->with('contents')->orderBy('created_at', 'desc')->paginate(10);
-        } 
-        // Pour les administrateurs et super admin, montrer toutes les campagnes
+        // Pour les superviseurs, administrateurs et super admin, montrer toutes les campagnes
         else {
             $campaigns = $query->with(['creator', 'influencers'])->paginate(10);
         }

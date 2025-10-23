@@ -45,12 +45,18 @@ class InfluencerController extends Controller
         
         // Si c'est un superviseur, ne montrer que les influenceurs qu'il supervise
         if (Auth::user()->role === 'supervisor') {
-            // Récupérer les IDs des influenceurs assignés à ce superviseur
-            $influencersIds = Assignment::where('supervisor_id', Auth::id())
-                ->distinct('influencer_id')
+            // Récupérer les IDs des influenceurs assignés à ce superviseur depuis la table supervisor_influencer
+            $influencersIds = DB::table('supervisor_influencer')
+                ->where('supervisor_id', Auth::id())
                 ->pluck('influencer_id')
                 ->toArray();
-            $query->whereIn('id', $influencersIds);
+            
+            // Si aucun influenceur n'est assigné, utiliser un ID impossible pour que la requête ne retourne rien
+            if (empty($influencersIds)) {
+                $query->where('id', 0); // Aucun utilisateur n'aura cet ID
+            } else {
+                $query->whereIn('id', $influencersIds);
+            }
         }
         
         // Trier les influenceurs du plus récent au plus ancien

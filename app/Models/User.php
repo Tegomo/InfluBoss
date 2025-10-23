@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -119,14 +120,21 @@ class User extends Authenticatable
      */
     public function supervisedCampaigns()
     {
-        return $this->hasManyThrough(
-            Campaign::class, 
-            Assignment::class,
-            'supervisor_id',
-            'id',
-            'id',
-            'campaign_id'
-        )->distinct();
+        // Récupérer les IDs des influenceurs supervisés par ce superviseur
+        $influencerIds = \Illuminate\Support\Facades\DB::table('supervisor_influencer')
+            ->where('supervisor_id', $this->id)
+            ->pluck('influencer_id')
+            ->toArray();
+            
+        if (empty($influencerIds)) {
+            // Si aucun influenceur n'est assigné, retourner une collection vide
+            return Campaign::whereRaw('1 = 0');
+        }
+        
+        // Récupérer les campagnes associées à ces influenceurs via la table assignments
+        return Campaign::whereHas('assignments', function($query) use ($influencerIds) {
+            $query->whereIn('influencer_id', $influencerIds);
+        })->distinct();
     }
     
 

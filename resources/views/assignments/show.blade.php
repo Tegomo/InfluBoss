@@ -109,7 +109,7 @@
                                     <span class="info-box-text">Campagne</span>
                                     <span class="info-box-number">
                                         <a href="{{ route('campaigns.show', $assignment->campaign) }}">
-                                            {{ $assignment->campaign->title ?? 'N/A' }}
+                                            {{ $assignment->campaign->name ?? 'N/A' }}
                                         </a>
                                     </span>
                                 </div>
@@ -218,31 +218,42 @@
                             <div class="col-md-3 mb-4">
                                 <div class="card h-100">
                                     <div class="card-header p-2 text-center">
-                                        @switch($content->content_type)
+                                        @switch($content->type)
                                             @case('image')
                                                 <span class="badge badge-info">Image</span>
                                                 @break
                                             @case('video')
                                                 <span class="badge badge-danger">Vidéo</span>
                                                 @break
-                                            @case('document')
-                                                <span class="badge badge-secondary">Document</span>
+                                            @case('text')
+                                                <span class="badge badge-success">Texte</span>
+                                                @break
+                                            @case('link')
+                                                <span class="badge badge-primary">Lien</span>
                                                 @break
                                             @default
-                                                <span class="badge badge-secondary">{{ $content->content_type }}</span>
+                                                <span class="badge badge-secondary">{{ ucfirst($content->type) }}</span>
                                         @endswitch
                                     </div>
                                     <div class="card-body text-center p-2">
-                                        @if($content->content_type == 'image')
+                                        @if($content->type == 'image')
                                             <img src="{{ asset('storage/' . $content->file_path) }}" alt="{{ $content->title }}" 
                                                 class="img-fluid" style="max-height: 150px;">
-                                        @elseif($content->content_type == 'video')
+                                        @elseif($content->type == 'video')
                                             <div class="text-center py-5">
                                                 <i class="fas fa-video fa-4x text-danger"></i>
                                             </div>
+                                        @elseif($content->type == 'text')
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-file-alt fa-4x text-success"></i>
+                                            </div>
+                                        @elseif($content->type == 'link')
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-link fa-4x text-primary"></i>
+                                            </div>
                                         @else
                                             <div class="text-center py-5">
-                                                <i class="fas fa-file-alt fa-4x text-secondary"></i>
+                                                <i class="fas fa-file fa-4x text-secondary"></i>
                                             </div>
                                         @endif
                                     </div>

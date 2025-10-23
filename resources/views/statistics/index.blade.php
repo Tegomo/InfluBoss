@@ -36,6 +36,135 @@
     </div>
     <br>
 
+    <!-- Statistiques d'engagement -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques d'engagement</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-success">
+                                <span class="info-box-icon"><i class="far fa-thumbs-up"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Likes</span>
+                                    <span class="info-box-number">{{ number_format($engagementStats['total']['likes']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-primary">
+                                <span class="info-box-icon"><i class="far fa-comment"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Commentaires</span>
+                                    <span class="info-box-number">{{ number_format($engagementStats['total']['comments']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-warning">
+                                <span class="info-box-icon"><i class="fas fa-share"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Partages</span>
+                                    <span class="info-box-number">{{ number_format($engagementStats['total']['shares']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-info">
+                                <span class="info-box-icon"><i class="fas fa-eye"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Vues</span>
+                                    <span class="info-box-number">{{ number_format($engagementStats['total']['views']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Statistiques d'engagement</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-2">Likes</div>
+                                        <div class="col-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $engagementStats['total']['likes'] / max(1, max(array_filter($engagementStats['total']))) * 100 }}%" aria-valuenow="{{ $engagementStats['total']['likes'] }}" aria-valuemin="0" aria-valuemax="{{ max(array_filter($engagementStats['total'])) }}">{{ number_format($engagementStats['total']['likes']) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-2">Commentaires</div>
+                                        <div class="col-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $engagementStats['total']['comments'] / max(1, max(array_filter($engagementStats['total']))) * 100 }}%" aria-valuenow="{{ $engagementStats['total']['comments'] }}" aria-valuemin="0" aria-valuemax="{{ max(array_filter($engagementStats['total'])) }}">{{ number_format($engagementStats['total']['comments']) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-2">Partages</div>
+                                        <div class="col-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ $engagementStats['total']['shares'] / max(1, max(array_filter($engagementStats['total']))) * 100 }}%" aria-valuenow="{{ $engagementStats['total']['shares'] }}" aria-valuemin="0" aria-valuemax="{{ max(array_filter($engagementStats['total'])) }}">{{ number_format($engagementStats['total']['shares']) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-2">Vues</div>
+                                        <div class="col-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $engagementStats['total']['views'] / max(1, max(array_filter($engagementStats['total']))) * 100 }}%" aria-valuenow="{{ $engagementStats['total']['views'] }}" aria-valuemin="0" aria-valuemax="{{ max(array_filter($engagementStats['total'])) }}">{{ number_format($engagementStats['total']['views']) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-2">Clics</div>
+                                        <div class="col-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ isset($engagementStats['total']['clicks']) ? $engagementStats['total']['clicks'] / max(1, max(array_filter($engagementStats['total']))) * 100 : 0 }}%" aria-valuenow="{{ isset($engagementStats['total']['clicks']) ? $engagementStats['total']['clicks'] : 0 }}" aria-valuemin="0" aria-valuemax="{{ max(array_filter($engagementStats['total'])) }}">{{ number_format(isset($engagementStats['total']['clicks']) ? $engagementStats['total']['clicks'] : 0) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Évolution de l'engagement par mois ({{ date('Y') }})</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="engagementMonthlyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Engagement par plateforme</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="engagementPlatformChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistiques des utilisateurs -->
     <div class="row">
         <div class="col-md-12">
@@ -537,6 +666,7 @@
     var assignmentStats = <?php echo json_encode($assignmentStats); ?>;
     var publicationStats = <?php echo json_encode($publicationStats); ?>;
     var noteStats = <?php echo json_encode($noteStats); ?>;
+    var engagementStats = <?php echo json_encode($engagementStats); ?>;
 </script>
 
 <!-- Chargement de Chart.js et initialisation des graphiques -->
@@ -870,6 +1000,148 @@ $(function() {
                 title: {
                     display: true,
                     text: 'Publications par mois'
+                }
+            }
+        }
+    });
+
+    // Graphique d'évolution de l'engagement par mois
+    const engagementMonthlyCtx = document.getElementById('engagementMonthlyChart').getContext('2d');
+    const engagementMonthlyLabels = [];
+    const likesData = [];
+    const commentsData = [];
+    const sharesData = [];
+    const viewsData = [];
+    
+    // Préparation des données pour le graphique
+    Object.entries(engagementStats.byMonth).forEach(([month, data]) => {
+        engagementMonthlyLabels.push(getMonthName(parseInt(month)));
+        likesData.push(data.likes);
+        commentsData.push(data.comments);
+        sharesData.push(data.shares);
+        viewsData.push(data.views);
+    });
+    
+    const engagementMonthlyChart = new Chart(engagementMonthlyCtx, {
+        type: 'line',
+        data: {
+            labels: engagementMonthlyLabels,
+            datasets: [
+                {
+                    label: 'Likes',
+                    data: likesData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Commentaires',
+                    data: commentsData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Partages',
+                    data: sharesData,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Vues',
+                    data: viewsData,
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Évolution de l\'engagement par mois'
+                }
+            }
+        }
+    });
+
+    // Graphique d'engagement par plateforme
+    const engagementPlatformCtx = document.getElementById('engagementPlatformChart').getContext('2d');
+    const platformLabels = [];
+    const platformLikesData = [];
+    const platformCommentsData = [];
+    const platformSharesData = [];
+    const platformViewsData = [];
+    
+    // Préparation des données pour le graphique
+    Object.entries(engagementStats.byPlatform).forEach(([platform, data]) => {
+        platformLabels.push(platform);
+        platformLikesData.push(data.likes);
+        platformCommentsData.push(data.comments);
+        platformSharesData.push(data.shares);
+        platformViewsData.push(data.views);
+    });
+    
+    const engagementPlatformChart = new Chart(engagementPlatformCtx, {
+        type: 'bar',
+        data: {
+            labels: platformLabels,
+            datasets: [
+                {
+                    label: 'Likes',
+                    data: platformLikesData,
+                    backgroundColor: '#28a745'
+                },
+                {
+                    label: 'Commentaires',
+                    data: platformCommentsData,
+                    backgroundColor: '#007bff'
+                },
+                {
+                    label: 'Partages',
+                    data: platformSharesData,
+                    backgroundColor: '#ffc107'
+                },
+                {
+                    label: 'Vues',
+                    data: platformViewsData,
+                    backgroundColor: '#17a2b8'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    stacked: false
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Engagement par plateforme'
                 }
             }
         }

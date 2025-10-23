@@ -64,14 +64,19 @@ class AssignmentController extends Controller
         // Récupérer les influenceurs selon le rôle de l'utilisateur
         if (Auth::user()->role === 'supervisor') {
             // Pour les superviseurs, récupérer uniquement leurs influenceurs assignés
-            // Récupérer les IDs des influenceurs supervisés via les assignments
-            $influencerIds = Assignment::where('supervisor_id', Auth::id())
-                ->distinct('influencer_id')
+            // Récupérer les IDs des influenceurs supervisés via la table supervisor_influencer
+            $influencerIds = DB::table('supervisor_influencer')
+                ->where('supervisor_id', Auth::id())
                 ->pluck('influencer_id')
                 ->toArray();
-            $influencers = \App\Models\User::where('role', 'influencer')
-                ->whereIn('id', $influencerIds)
-                ->get();
+            
+            if (empty($influencerIds)) {
+                $influencers = collect(); // Collection vide si aucun influenceur n'est assigné
+            } else {
+                $influencers = \App\Models\User::where('role', 'influencer')
+                    ->whereIn('id', $influencerIds)
+                    ->get();
+            }
             $supervisors = collect([Auth::user()]); // Seul le superviseur connecté
         } else {
             // Pour les admins, récupérer tous les influenceurs et superviseurs

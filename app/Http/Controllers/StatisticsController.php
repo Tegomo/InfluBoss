@@ -113,6 +113,32 @@ class StatisticsController extends Controller
                 ->toArray(),
         ];
         
+        // Statistiques d'engagement (likes, commentaires, partages, vues, clics)
+        $engagementStats = [
+            'total' => [
+                'likes' => DB::table('stats')->sum('likes'),
+                'comments' => DB::table('stats')->sum('comments'),
+                'shares' => DB::table('stats')->sum('shares'),
+                'views' => DB::table('stats')->sum('views'),
+                'clicks' => DB::table('stats')->sum('clicks'),
+            ],
+            'byMonth' => DB::table('stats')
+                ->selectRaw('MONTH(collected_at) as month, SUM(likes) as likes, SUM(comments) as comments, SUM(shares) as shares, SUM(views) as views, SUM(clicks) as clicks')
+                ->whereYear('collected_at', date('Y'))
+                ->groupBy(DB::raw('MONTH(collected_at)'))
+                ->orderBy('month')
+                ->get()
+                ->keyBy('month')
+                ->toArray(),
+            'byPlatform' => DB::table('stats')
+                ->join('publications', 'stats.publication_id', '=', 'publications.id')
+                ->selectRaw('platform, SUM(likes) as likes, SUM(comments) as comments, SUM(shares) as shares, SUM(views) as views, SUM(clicks) as clicks')
+                ->groupBy('platform')
+                ->get()
+                ->keyBy('platform')
+                ->toArray(),
+        ];
+        
         // Top influenceurs par nombre de publications
         $topInfluencers = User::where('role', 'influencer')
             ->withCount('publications')
@@ -140,6 +166,7 @@ class StatisticsController extends Controller
             'assignmentStats' => $assignmentStats,
             'publicationStats' => $publicationStats,
             'noteStats' => $noteStats,
+            'engagementStats' => $engagementStats,
             'topInfluencers' => $topInfluencers,
             'topSupervisors' => $topSupervisors,
             'topCampaigns' => $topCampaigns

@@ -53,7 +53,7 @@
         <div class="info-box mb-3">
             <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-users"></i></span>
             <div class="info-box-content">
-                <span class="info-box-text">Embaassadeurs</span>
+                <span class="info-box-text">Ambassadeurs</span>
                 <span class="info-box-number">{{ $stats['influencers'] }}</span>
             </div>
             <!-- /.info-box-content -->

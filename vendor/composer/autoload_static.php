@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInita7d30da334636ef84dce008eeac9f85b
+class ComposerStaticInitf7f00704ca8045debab70120e51068fb
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -809,8 +809,10 @@ class ComposerStaticInita7d30da334636ef84dce008eeac9f85b
         'Database\\Seeders\\CampaignSeeder' => __DIR__ . '/../..' . '/database/seeders/CampaignSeeder.php',
         'Database\\Seeders\\ContentSeeder' => __DIR__ . '/../..' . '/database/seeders/ContentSeeder.php',
         'Database\\Seeders\\DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeders/DatabaseSeeder.php',
+        'Database\\Seeders\\InfluencersSeeder' => __DIR__ . '/../..' . '/database/seeders/InfluencersSeeder.php',
         'Database\\Seeders\\PublicationSeeder' => __DIR__ . '/../..' . '/database/seeders/PublicationSeeder.php',
         'Database\\Seeders\\SupervisorInfluencerSeeder' => __DIR__ . '/../..' . '/database/seeders/SupervisorInfluencerSeeder.php',
+        'Database\\Seeders\\SupervisorsSeeder' => __DIR__ . '/../..' . '/database/seeders/SupervisorsSeeder.php',
         'Database\\Seeders\\UserSeeder' => __DIR__ . '/../..' . '/database/seeders/UserSeeder.php',
         'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
         'DateException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateException.php',
@@ -7983,10 +7985,10 @@ class ComposerStaticInita7d30da334636ef84dce008eeac9f85b
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInita7d30da334636ef84dce008eeac9f85b::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInita7d30da334636ef84dce008eeac9f85b::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInita7d30da334636ef84dce008eeac9f85b::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInita7d30da334636ef84dce008eeac9f85b::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf7f00704ca8045debab70120e51068fb::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf7f00704ca8045debab70120e51068fb::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitf7f00704ca8045debab70120e51068fb::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitf7f00704ca8045debab70120e51068fb::$classMap;
 
         }, null, ClassLoader::class);
     }
