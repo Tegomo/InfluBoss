@@ -17,6 +17,9 @@ class UserController extends Controller
         // Filtrer par rôle si spécifié
         $query = User::query();
         
+        // Exclure les super_admin de la liste
+        $query->where('role', '!=', 'super_admin');
+        
         if ($request->has('role')) {
             $selectedRole = $request->query('role');
             $query->where('role', $selectedRole);
@@ -36,7 +39,7 @@ class UserController extends Controller
     public function indexAll()
     {
         // TODO: Ajouter une policy/gate pour restreindre l'accès
-        $users = User::latest()->paginate(20);
+        $users = User::where('role', '!=', 'super_admin')->latest()->paginate(20);
         return view('users.index', [
             'users' => $users,
             'selectedRole' => null

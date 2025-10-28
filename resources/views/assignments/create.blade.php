@@ -40,7 +40,7 @@
                                         <option value="">Sélectionner une campagne</option>
                                         @foreach($campaigns as $campaign)
                                             <option value="{{ $campaign->id }}" {{ old('campaign_id') == $campaign->id || request('campaign_id') == $campaign->id ? 'selected' : '' }}>
-                                                {{ $campaign->title }} {{ $campaign->description ? '- '.$campaign->description : '' }}
+                                                {{ $campaign->name ?? $campaign->title }} {{ $campaign->description ? '- '.$campaign->description : '' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -98,7 +98,7 @@
                                             <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-influencers">Désélectionner tout</button>
                                         </div>
                                     </div>
-                                    <small class="form-text text-muted">Vous pouvez sélectionner plusieurs influenceurs pour créer plusieurs missions en une seule fois.</small>
+                                    <small class="form-text text-muted">Vous pouvez sélectionner plusieurs Ambassadeurs pour créer plusieurs missions en une seule fois.</small>
                                     @error('influencer_ids')
                                         <span class="invalid-feedback d-block">{{ $message }}</span>
                                     @enderror
@@ -138,7 +138,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="status">Statut <span class="text-danger">*</span></label>
-                                    <select class="form-control @error('status') is-invalid @enderror" 
+                                    <select class="form-control select2 @error('status') is-invalid @enderror" 
                                         id="status" name="status" required>
                                         <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>En attente</option>
                                         <option value="accepted" {{ old('status') == 'accepted' ? 'selected' : '' }}>Acceptée</option>
@@ -261,8 +261,168 @@
 @push('scripts')
 <script>
 $(function () {
-    // Pour les autres éléments Select2 qui pourraient exister
-    $('.select2').select2();
+    // Configuration générale pour tous les select
+    $.fn.select2.defaults.set('theme', 'bootstrap4');
+    $.fn.select2.defaults.set('width', '100%');
+    
+    // Initialisation des select avec formatage personnalisé
+    $('#campaign_id').select2({
+        placeholder: 'Sélectionner une campagne',
+        allowClear: true,
+        templateResult: formatCampaign,
+        templateSelection: formatCampaign
+    });
+    
+    $('#content_id').select2({
+        placeholder: 'Sélectionner un contenu',
+        allowClear: true,
+        templateResult: formatContent,
+        templateSelection: formatContent
+    });
+    
+    $('#supervisor_id').select2({
+        placeholder: 'Sélectionner un superviseur',
+        allowClear: true,
+        templateResult: formatSupervisor,
+        templateSelection: formatSupervisor
+    });
+    
+    $('#status').select2({
+        placeholder: 'Sélectionner un statut',
+        allowClear: true,
+        templateResult: formatStatus,
+        templateSelection: formatStatus
+    });
+    
+    $('#platforms').select2({
+        placeholder: 'Sélectionner une ou plusieurs plateformes',
+        allowClear: true,
+        multiple: true,
+        templateResult: formatPlatform,
+        templateSelection: formatPlatform
+    });
+    
+    // Fonction pour formater les options de campagne
+    function formatCampaign(campaign) {
+        if (!campaign.id) {
+            return campaign.text;
+        }
+        
+        var $campaign = $(
+            '<span><i class="fas fa-bullhorn mr-2 text-primary"></i> ' + campaign.text + '</span>'
+        );
+        return $campaign;
+    };
+    
+    // Fonction pour formater les options de contenu
+    function formatContent(content) {
+        if (!content.id) {
+            return content.text;
+        }
+        
+        var $content = $(
+            '<span><i class="fas fa-file-alt mr-2 text-info"></i> ' + content.text + '</span>'
+        );
+        return $content;
+    };
+    
+    // Fonction pour formater les options de superviseur
+    function formatSupervisor(supervisor) {
+        if (!supervisor.id) {
+            return supervisor.text;
+        }
+        
+        var $supervisor = $(
+            '<span><i class="fas fa-user-tie mr-2 text-secondary"></i> ' + supervisor.text + '</span>'
+        );
+        return $supervisor;
+    };
+    
+    // Fonction pour formater les options de statut
+    function formatStatus(status) {
+        if (!status.id) {
+            return status.text;
+        }
+        
+        var icon = '';
+        var color = '';
+        
+        switch(status.id) {
+            case 'pending':
+                icon = 'fa-clock';
+                color = 'text-warning';
+                break;
+            case 'accepted':
+                icon = 'fa-check';
+                color = 'text-primary';
+                break;
+            case 'in_progress':
+                icon = 'fa-spinner';
+                color = 'text-info';
+                break;
+            case 'completed':
+                icon = 'fa-check-circle';
+                color = 'text-success';
+                break;
+            default:
+                icon = 'fa-question-circle';
+                color = 'text-secondary';
+        }
+        
+        var $status = $(
+            '<span><i class="fas ' + icon + ' mr-2 ' + color + '"></i> ' + status.text + '</span>'
+        );
+        return $status;
+    };
+    
+    // Fonction pour formater les options de plateforme avec icônes
+    function formatPlatform(platform) {
+        if (!platform.id) {
+            return platform.text;
+        }
+        
+        var icon = '';
+        var color = '';
+        
+        switch(platform.id) {
+            case 'instagram':
+                icon = 'fa-instagram';
+                color = 'text-danger';
+                break;
+            case 'facebook':
+                icon = 'fa-facebook';
+                color = 'text-primary';
+                break;
+            case 'twitter':
+                icon = 'fa-twitter';
+                color = 'text-info';
+                break;
+            case 'tiktok':
+                icon = 'fa-tiktok';
+                color = 'text-dark';
+                break;
+            case 'youtube':
+                icon = 'fa-youtube';
+                color = 'text-danger';
+                break;
+            case 'linkedin':
+                icon = 'fa-linkedin';
+                color = 'text-primary';
+                break;
+            case 'blog':
+                icon = 'fa-blog';
+                color = 'text-success';
+                break;
+            default:
+                icon = 'fa-globe';
+                color = 'text-secondary';
+        }
+        
+        var $platform = $(
+            '<span><i class="fab ' + icon + ' mr-2 ' + color + '"></i> ' + platform.text + '</span>'
+        );
+        return $platform;
+    };
     
     // Fonctionnalité de recherche d'influenceurs
     $('#influencer-search').on('keyup', function() {
@@ -355,33 +515,22 @@ $(function () {
         color: #fff;
         background-color: #e67211;
     }
+    
+    /* Amélioration des styles Select2 */
+    .select2-container--bootstrap4 .select2-results__option--highlighted {
+        background-color: #fd7e14 !important;
+    }
+    
+    /* Style pour la boîte de sélection des influenceurs */
+    #influencers-container {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
+    
+    /* Style pour les dates */
+    input[type="date"] {
+        height: calc(2.25rem + 2px);
+    }
 </style>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Si disponible, initialiser Select2 pour améliorer l'UX des listes déroulantes
-        if (typeof $ !== 'undefined' && $.fn.select2) {
-            $('#campaign_id').select2({
-                placeholder: 'Sélectionner une campagne',
-                allowClear: true
-            });
-            
-            $('#influencer_ids').select2({
-                placeholder: 'Sélectionner un ou plusieurs influenceurs',
-                allowClear: true,
-                multiple: true
-            });
-            
-            $('#supervisor_id').select2({
-                placeholder: 'Sélectionner un superviseur',
-                allowClear: true
-            });
-            
-            $('#platforms').select2({
-                placeholder: 'Sélectionner une ou plusieurs plateformes',
-                allowClear: true,
-                multiple: true
-            });
-        }
-    });
-</script>
 @endpush

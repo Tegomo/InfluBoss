@@ -32,16 +32,9 @@ class ContentPolicy
      */
     public function view(User $user, Content $content)
     {
-        // Les admin et super admin peuvent voir tous les contenus
-        if (in_array($user->role, ['admin', 'super_admin'])) {
+        // Les admin, super admin et superviseurs peuvent voir tous les contenus
+        if (in_array($user->role, ['admin', 'super_admin', 'supervisor'])) {
             return true;
-        }
-        
-        // Les superviseurs peuvent voir les contenus des campagnes qu'ils supervisent
-        if ($user->role === 'supervisor') {
-            return $user->supervisedCampaigns()
-                ->where('campaigns.id', $content->campaign_id)
-                ->exists();
         }
         
         // Les influenceurs peuvent voir les contenus des campagnes auxquelles ils sont assignés

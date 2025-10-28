@@ -9,6 +9,7 @@ use App\Services\BrightDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class PublicationController extends Controller
 {
@@ -84,12 +85,18 @@ class PublicationController extends Controller
         }
         // Pour les superviseurs, montrer seulement les publications des influenceurs qu'ils supervisent
         elseif (Auth::user()->role === 'supervisor') {
-            // Récupérer les IDs des influenceurs supervisés via les assignments
-            $influencerIds = Assignment::where('supervisor_id', Auth::id())
-                ->distinct('influencer_id')
+            // Récupérer les IDs des influenceurs supervisés via la table supervisor_influencer
+            $influencerIds = DB::table('supervisor_influencer')
+                ->where('supervisor_id', Auth::id())
                 ->pluck('influencer_id')
                 ->toArray();
-            $query->whereIn('influencer_id', $influencerIds);
+                
+            // Si aucun influenceur n'est assigné, utiliser un ID impossible pour que la requête ne retourne rien
+            if (empty($influencerIds)) {
+                $query->where('influencer_id', 0); // Aucun utilisateur n'aura cet ID
+            } else {
+                $query->whereIn('influencer_id', $influencerIds);
+            }
         }
         
         $publications = $query->with([
@@ -104,8 +111,25 @@ class PublicationController extends Controller
             
         // Récupérer les campagnes pour le filtre
         $campaigns = \App\Models\Campaign::select('id', 'name as title')->get();
+        
+        // Calculer les statistiques globales
+        $globalStats = [
+            'likes' => 0,
+            'comments' => 0,
+            'shares' => 0,
+            'total_publications' => $publications->total()
+        ];
+        
+        // Collecter les statistiques de toutes les publications
+        foreach ($publications as $publication) {
+            if ($publication->latestStats) {
+                $globalStats['likes'] += $publication->latestStats->likes ?? 0;
+                $globalStats['comments'] += $publication->latestStats->comments ?? 0;
+                $globalStats['shares'] += $publication->latestStats->shares ?? 0;
+            }
+        }
             
-        return view('publications.index', compact('publications', 'campaigns'));
+        return view('publications.index', compact('publications', 'campaigns', 'globalStats'));
     }
 
     /**
@@ -250,6 +274,21 @@ class PublicationController extends Controller
                 'engagement_rate' => $validated['engagement_rate'] ?? 0,
                 'recorded_at' => now(),
             ]);
+        }
+        
+        // Si la publication est automatiquement vérifiée (superviseur/admin), vérifier si l'assignment est terminé
+        if (in_array($user->role, ['supervisor', 'admin', 'super_admin'])) {
+            $assignment = Assignment::find($validated['assignment_id']);
+            if ($assignment) {
+                $requiredPosts = $assignment->required_posts ?? 0;
+                $verifiedPosts = $assignment->publications()->where('status', 'verified')->count();
+                
+                // Si toutes les publications requises sont vérifiées et que le statut n'est pas déjà "completed"
+                if ($requiredPosts > 0 && $verifiedPosts >= $requiredPosts && $assignment->status !== 'completed') {
+                    $assignment->status = 'completed';
+                    $assignment->save();
+                }
+            }
         }
         
         // Message différent selon le rôle de l'utilisateur
@@ -411,6 +450,19 @@ class PublicationController extends Controller
             // Lancer la récupération des statistiques en arrière-plan
             $brightDataService = app(BrightDataService::class);
             $brightDataService->fetchStats($publication);
+            
+            // Vérifier si toutes les publications requises sont vérifiées pour marquer l'assignment comme terminé
+            $assignment = $publication->assignment;
+            if ($assignment) {
+                $requiredPosts = $assignment->required_posts ?? 0;
+                $verifiedPosts = $assignment->publications()->where('status', 'verified')->count();
+                
+                // Si toutes les publications requises sont vérifiées et que le statut n'est pas déjà "completed"
+                if ($requiredPosts > 0 && $verifiedPosts >= $requiredPosts && $assignment->status !== 'completed') {
+                    $assignment->status = 'completed';
+                    $assignment->save();
+                }
+            }
         }
         
         $action = $validated['action'] === 'verify' ? 'vérifiée' : 'rejetée';

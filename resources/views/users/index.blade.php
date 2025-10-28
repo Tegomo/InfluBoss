@@ -2,7 +2,7 @@
 
 @section('title')
 @if(isset($selectedRole) && $selectedRole === 'influencer')
-    Liste des influenceurs
+    Liste des Ambassadeurs
 @elseif(isset($selectedRole) && $selectedRole === 'supervisor')
     Liste des superviseurs
 @else
@@ -12,7 +12,7 @@
 
 @section('breadcrumb')
 @if(isset($selectedRole) && $selectedRole === 'influencer')
-    <li class="breadcrumb-item active">Influenceurs</li>
+    <li class="breadcrumb-item active">Ambassadeurs</li>
 @elseif(isset($selectedRole) && $selectedRole === 'supervisor')
     <li class="breadcrumb-item active">Superviseurs</li>
 @else
@@ -25,7 +25,7 @@
     <div class="card-header">
         <h3 class="card-title">
             @if(isset($selectedRole) && $selectedRole === 'influencer')
-                Liste des influenceurs
+                Liste des Ambassadeurs
             @elseif(isset($selectedRole) && $selectedRole === 'supervisor')
                 Liste des superviseurs
             @else

@@ -43,14 +43,8 @@ class ContentController extends Controller
                 ->toArray();
             $query->whereIn('campaign_id', $campaignIds);
         }
-        // Pour les superviseurs, montrer seulement les contenus des campagnes qu'ils supervisent
-        elseif (Auth::user()->role === 'supervisor') {
-            // Récupérer les IDs des campagnes supervisées
-            $campaignIds = Campaign::whereHas('assignments', function($query) {
-                $query->where('supervisor_id', Auth::id());
-            })->pluck('id')->toArray();
-            $query->whereIn('campaign_id', $campaignIds);
-        }
+        // Pour les superviseurs, montrer tous les contenus (comme les admins)
+        // Les filtres par campagne, statut et type s'appliquent toujours si spécifiés
         
         $contents = $query->with(['campaign', 'creator'])
             ->orderByDesc('created_at')
@@ -175,6 +169,7 @@ class ContentController extends Controller
             'guidelines' => 'nullable|array',
             'status' => 'required|in:draft,approved,archived',
             'publication_date' => 'nullable|date',
+            'tags' => 'nullable|string|max:255',
         ]);
         
         // Traiter le fichier si fourni

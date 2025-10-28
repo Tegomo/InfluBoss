@@ -1,11 +1,11 @@
 @extends('layouts.adminlte')
 
 @section('title')
-Ajouter un nouvel influenceur
+Ajouter un nouvel ambassadeur
 @endsection
 
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Influenceurs</a></li>
+<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Ambassadeurs</a></li>
 <li class="breadcrumb-item active">Nouveau</li>
 @endsection
 
@@ -14,7 +14,7 @@ Ajouter un nouvel influenceur
     <div class="col-md-12">
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title">Informations de l'influenceur</h3>
+                <h3 class="card-title">Informations de l'ambassadeur</h3>
             </div>
             <form method="POST" action="{{ route('influencers.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -65,14 +65,14 @@ Ajouter un nouvel influenceur
                             </div>
                             <div class="form-group">
                                 <label for="password">Mot de passe</label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Mot de passe" required>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" value="password" id="password" name="password" placeholder="Mot de passe" required>
                                 @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="form-group">
                                 <label for="password_confirmation">Confirmer le mot de passe</label>
-                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Confirmer le mot de passe" required>
+                                <input type="password" class="form-control" id="password_confirmation" value="password" name="password_confirmation" placeholder="Confirmer le mot de passe" required>
                             </div>
                         </div>
                         <div class="col-md-4">

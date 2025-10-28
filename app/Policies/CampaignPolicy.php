@@ -32,14 +32,9 @@ class CampaignPolicy
      */
     public function view(User $user, Campaign $campaign)
     {
-        // Les admin et super admin peuvent voir toutes les campagnes
-        if (in_array($user->role, ['admin', 'super_admin'])) {
+        // Les admin, super admin et superviseurs peuvent voir toutes les campagnes
+        if (in_array($user->role, ['admin', 'super_admin', 'supervisor'])) {
             return true;
-        }
-        
-        // Les superviseurs peuvent voir les campagnes qu'ils supervisent
-        if ($user->role === 'supervisor') {
-            return $user->supervisedCampaigns()->where('campaigns.id', $campaign->id)->exists();
         }
         
         // Les influenceurs peuvent voir les campagnes auxquelles ils sont assignés

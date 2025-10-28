@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>InfluBoss | @yield('title')</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('image/orange-est-la.png') }}" type="image/png">
+    <link rel="shortcut icon" href="{{ asset('image/orange-est-la.png') }}" type="image/png">
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -114,7 +118,7 @@
                     <li class="nav-item">
                         <a href="{{ route('influencers.index') }}" class="nav-link {{ request()->routeIs('influencers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i>
-                            <p>Influenceurs</p>
+                            <p>Ambassadeurs</p>
                         </a>
                     </li>
                     @endif

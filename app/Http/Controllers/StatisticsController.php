@@ -13,6 +13,9 @@ use App\Models\Assignment;
 use App\Models\Publication;
 use App\Models\Note;
 use Carbon\Carbon;
+use App\Exports\StatisticsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class StatisticsController extends Controller
 {
@@ -25,12 +28,10 @@ class StatisticsController extends Controller
     }
     
     /**
-     * Affiche la page des statistiques
+     * Récupère les statistiques pour l'affichage et l'exportation
      */
-    public function index()
+    private function getStatistics()
     {
-        // L'accès est déjà protégé par le middleware role:admin,super_admin
-        
         // Statistiques sur les utilisateurs
         $userStats = [
             'total' => User::count(),
@@ -112,6 +113,32 @@ class StatisticsController extends Controller
                 ->toArray(),
         ];
         
+        // Statistiques d'engagement (likes, commentaires, partages, vues, clics)
+        $engagementStats = [
+            'total' => [
+                'likes' => DB::table('stats')->sum('likes'),
+                'comments' => DB::table('stats')->sum('comments'),
+                'shares' => DB::table('stats')->sum('shares'),
+                'views' => DB::table('stats')->sum('views'),
+                'clicks' => DB::table('stats')->sum('clicks'),
+            ],
+            'byMonth' => DB::table('stats')
+                ->selectRaw('MONTH(collected_at) as month, SUM(likes) as likes, SUM(comments) as comments, SUM(shares) as shares, SUM(views) as views, SUM(clicks) as clicks')
+                ->whereYear('collected_at', date('Y'))
+                ->groupBy(DB::raw('MONTH(collected_at)'))
+                ->orderBy('month')
+                ->get()
+                ->keyBy('month')
+                ->toArray(),
+            'byPlatform' => DB::table('stats')
+                ->join('publications', 'stats.publication_id', '=', 'publications.id')
+                ->selectRaw('platform, SUM(likes) as likes, SUM(comments) as comments, SUM(shares) as shares, SUM(views) as views, SUM(clicks) as clicks')
+                ->groupBy('platform')
+                ->get()
+                ->keyBy('platform')
+                ->toArray(),
+        ];
+        
         // Top influenceurs par nombre de publications
         $topInfluencers = User::where('role', 'influencer')
             ->withCount('publications')
@@ -131,17 +158,68 @@ class StatisticsController extends Controller
             ->orderBy('publications_count', 'desc')
             ->limit(10)
             ->get();
+            
+        return [
+            'userStats' => $userStats,
+            'campaignStats' => $campaignStats,
+            'contentStats' => $contentStats,
+            'assignmentStats' => $assignmentStats,
+            'publicationStats' => $publicationStats,
+            'noteStats' => $noteStats,
+            'engagementStats' => $engagementStats,
+            'topInfluencers' => $topInfluencers,
+            'topSupervisors' => $topSupervisors,
+            'topCampaigns' => $topCampaigns
+        ];
+    }
+    
+    /**
+     * Affiche la page des statistiques
+     */
+    public function index()
+    {
+        // L'accès est déjà protégé par le middleware role:admin,super_admin
+        $statistics = $this->getStatistics();
         
-        return view('statistics.index', compact(
-            'userStats',
-            'campaignStats',
-            'contentStats',
-            'assignmentStats',
-            'publicationStats',
-            'noteStats',
-            'topInfluencers',
-            'topSupervisors',
-            'topCampaigns'
-        ));
+        return view('statistics.index', $statistics);
+    }
+
+    /**
+     * Exporte les statistiques au format Excel
+     */
+    public function export()
+    {
+        // L'accès est déjà protégé par le middleware role:admin,super_admin
+        $statistics = $this->getStatistics();
+        
+        $export = new StatisticsExport(
+            $statistics['userStats'],
+            $statistics['campaignStats'],
+            $statistics['contentStats'],
+            $statistics['assignmentStats'],
+            $statistics['publicationStats'],
+            $statistics['noteStats'],
+            $statistics['topInfluencers'],
+            $statistics['topSupervisors'],
+            $statistics['topCampaigns']
+        );
+        
+        $date = Carbon::now()->format('Y-m-d_H-i-s');
+        return Excel::download($export, "statistiques_influboss_{$date}.xlsx");
+    }
+    
+    /**
+     * Exporte les statistiques au format PDF
+     */
+    public function exportPdf()
+    {
+        // L'accès est déjà protégé par le middleware role:admin,super_admin
+        $statistics = $this->getStatistics();
+        
+        $pdf = Pdf::loadView('statistics.pdf', $statistics);
+        $pdf->setPaper('A4', 'portrait');
+        
+        $date = Carbon::now()->format('Y-m-d_H-i-s');
+        return $pdf->download("statistiques_influboss_{$date}.pdf");
     }
 }

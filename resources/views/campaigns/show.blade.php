@@ -85,7 +85,7 @@
                     </div>
                     <hr>
                     <div class="row">
-                        <div class="col-md-4 text-bold">Influenceurs:</div>
+                        <div class="col-md-4 text-bold">Ambassadeurs:</div>
                         <div class="col-md-8">
                             @php
                                 $influencers = $campaign->assignments()->with('influencer')->get()->pluck('influencer')->unique('id');
@@ -104,7 +104,7 @@
                                     @endforeach
                                 </ul>
                             @else
-                                <p>Aucun influenceur assigné</p>
+                                <p>Aucun embassadeur assigné</p>
                             @endif
                         </div>
                     </div>
@@ -233,7 +233,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Influenceur</th>
+                                <th>Embassadeur</th>
                                 <th>Superviseur</th>
                                 <th>Statut</th>
                                 <th>Date d'assignation</th>

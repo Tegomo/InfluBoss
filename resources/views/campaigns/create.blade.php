@@ -98,13 +98,50 @@
                         
                         <div class="form-group">
                             <label for="objectives">Objectifs</label>
-                            <textarea class="form-control @error('objectives') is-invalid @enderror" 
-                                id="objectives" name="objectives" rows="3">{{ old('objectives') }}</textarea>
-                            <small class="form-text text-muted">Séparez les objectifs par une virgule</small>
+                            <div class="objectives-container">
+                                <div class="objective-inputs">
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" name="objectives[]" placeholder="Objectif 1">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-success add-objective"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Ajoutez autant d'objectifs que nécessaire</small>
                             @error('objectives')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
                             @enderror
                         </div>
+                        
+                        @push('scripts')
+                        <script>
+                            $(document).ready(function() {
+                                // Ajouter un nouvel objectif
+                                $(document).on('click', '.add-objective', function() {
+                                    var count = $('.objective-inputs .input-group').length + 1;
+                                    var newInput = `
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" name="objectives[]" placeholder="Objectif ${count}">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-danger remove-objective"><i class="fas fa-minus"></i></button>
+                                            </div>
+                                        </div>
+                                    `;
+                                    $('.objective-inputs').append(newInput);
+                                });
+                                
+                                // Supprimer un objectif
+                                $(document).on('click', '.remove-objective', function() {
+                                    $(this).closest('.input-group').remove();
+                                    // Réindexer les placeholders
+                                    $('.objective-inputs .input-group').each(function(index) {
+                                        $(this).find('input').attr('placeholder', 'Objectif ' + (index + 1));
+                                    });
+                                });
+                            });
+                        </script>
+                        @endpush
                         
                         <div class="form-group">
                             <label for="platforms">Plateformes <span class="text-danger">*</span></label>

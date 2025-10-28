@@ -1,11 +1,11 @@
 @extends('layouts.adminlte')
 
 @section('title')
-Influenceur: {{ $influencer->name }}
+Embassadeur: {{ $influencer->name }}
 @endsection
 
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Influenceurs</a></li>
+<li class="breadcrumb-item"><a href="{{ route('influencers.index') }}">Ambassadeurs</a></li>
 <li class="breadcrumb-item active">{{ $influencer->name }}</li>
 @endsection
 
@@ -26,7 +26,7 @@ Influenceur: {{ $influencer->name }}
                 </div>
 
                 <h3 class="profile-username text-center">{{ $influencer->name }}</h3>
-                <p class="text-muted text-center">Influenceur</p>
+                <p class="text-muted text-center">Embassadeur</p>
 
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
@@ -335,16 +335,99 @@ Influenceur: {{ $influencer->name }}
                             </div>
                         </div>
                         
-                        <!-- Graphique des performances (placeholder) -->
+                        <!-- Graphique des performances -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">Performance des publications</h3>
                             </div>
                             <div class="card-body">
-                                <div class="text-center text-muted py-5">
-                                    <i class="fas fa-chart-bar fa-4x mb-3"></i>
-                                    <p>Les données de performance seront disponibles lorsque l'influenceur aura des publications approuvées.</p>
-                                </div>
+                                @php
+                                    $verifiedPublications = $publications->where('status', 'verified');
+                                    $hasStats = $verifiedPublications->filter(function($pub) {
+                                        return $pub->latestStats !== null;
+                                    })->count() > 0;
+                                @endphp
+                                
+                                @if($hasStats)
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-info">
+                                                <span class="info-box-icon"><i class="fas fa-heart"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Likes totaux</span>
+                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->likes : 0; })) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-success">
+                                                <span class="info-box-icon"><i class="fas fa-comments"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Commentaires</span>
+                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->comments : 0; })) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-warning">
+                                                <span class="info-box-icon"><i class="fas fa-share"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Partages</span>
+                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->shares : 0; })) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="info-box bg-danger">
+                                                <span class="info-box-icon"><i class="fas fa-eye"></i></span>
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">Vues totales</span>
+                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->views : 0; })) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive mt-3">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Publication</th>
+                                                    <th>Plateforme</th>
+                                                    <th>Likes</th>
+                                                    <th>Commentaires</th>
+                                                    <th>Partages</th>
+                                                    <th>Vues</th>
+                                                    <th>Taux d'engagement</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($verifiedPublications as $pub)
+                                                    @if($pub->latestStats)
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ route('publications.show', $pub) }}">
+                                                                #{{ $pub->id }}
+                                                            </a>
+                                                        </td>
+                                                        <td>{{ ucfirst($pub->platform) }}</td>
+                                                        <td>{{ number_format($pub->latestStats->likes) }}</td>
+                                                        <td>{{ number_format($pub->latestStats->comments) }}</td>
+                                                        <td>{{ number_format($pub->latestStats->shares) }}</td>
+                                                        <td>{{ number_format($pub->latestStats->views) }}</td>
+                                                        <td>{{ number_format($pub->latestStats->engagement_rate, 2) }}%</td>
+                                                    </tr>
+                                                    @endif
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-chart-bar fa-4x mb-3"></i>
+                                        <p>Les données de performance seront disponibles lorsque l'influenceur aura des publications vérifiées avec des statistiques.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

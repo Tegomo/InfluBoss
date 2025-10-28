@@ -76,14 +76,27 @@
                                         {!! $publication->embed_code !!}
                                     </div>
                                 @elseif($publication->screenshot_path)
+                                    @php
+                                        $filePath = 'storage/' . $publication->screenshot_path;
+                                        $fileExists = file_exists(public_path($filePath));
+                                    @endphp
                                     <div class="text-center mb-4">
-                                        <img src="{{ asset('storage/' . $publication->screenshot_path) }}" alt="Capture d'écran de la publication" 
-                                            class="img-fluid rounded border">
+                                        @if($fileExists)
+                                            <img src="{{ asset($filePath) }}" alt="Capture d'écran de la publication" 
+                                                class="img-fluid rounded border">
+                                        @else
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle mr-2"></i> L'image n'est pas disponible sur le serveur.
+                                            </div>
+                                            <div class="text-center py-3">
+                                                <i class="fas fa-image fa-5x text-secondary mb-3"></i>
+                                            </div>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="alert alert-info mb-4">
                                         <i class="icon fas fa-info-circle"></i> Aucun aperçu disponible pour cette publication.
-                                        <a href="{{ $publication->url }}" target="_blank" class="alert-link">Voir directement sur {{ ucfirst($publication->platform) }}</a>.
+                                        <a href="{{ $publication->post_url }}" target="_blank" class="alert-link">Voir directement sur {{ ucfirst($publication->platform) }}</a>.
                                     </div>
                                 @endif
                                 
@@ -93,7 +106,7 @@
                                             <h5 class="mb-0">Contenu de la publication</h5>
                                         </div>
                                         <div class="card-body bg-light">
-                                            <p class="mb-0">{{ $publication->content }}</p>
+                                            <p class="mb-0">{{ $publication->description }}</p>
                                         </div>
                                     </div>
                                 @endif
@@ -106,7 +119,7 @@
                                 <div class="card-body p-0">
                                     <table class="table">
                                         <tr>
-                                            <td width="30%">Influenceur:</td>
+                                            <td width="30%">Embassadeur:</td>
                                             <td>
                                                 <a href="{{ route('influencers.show', $publication->influencer) }}">
                                                     {{ $publication->influencer->name ?? 'Non défini' }}
@@ -117,7 +130,7 @@
                                             <td>Campagne:</td>
                                             <td>
                                                 <a href="{{ route('campaigns.show', $publication->assignment->campaign) }}">
-                                                    {{ $publication->assignment->campaign->title ?? 'Non définie' }}
+                                                    {{ $publication->assignment->campaign->name ?? 'Non définie' }}
                                                 </a>
                                             </td>
                                         </tr>
@@ -125,7 +138,7 @@
                                             <td>Mission:</td>
                                             <td>
                                                 <a href="{{ route('assignments.show', $publication->assignment) }}">
-                                                    Mission #{{ $publication->assignment->id }}
+                                                    Mission #{{ $publication->assignment->id }} - {{ $publication->assignment->campaign->name ?? 'N/A' }} ({{ $publication->assignment->influencer->name ?? 'N/A' }})
                                                 </a>
                                             </td>
                                         </tr>

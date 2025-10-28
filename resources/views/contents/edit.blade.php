@@ -129,12 +129,41 @@
                             @enderror
                         </div>
                         
+                        @if($content->type == 'text' || $content->type == 'link')
                         <div class="form-group">
-                            <label for="platform_guidelines">Directives de publication</label>
-                            <textarea class="form-control @error('platform_guidelines') is-invalid @enderror" 
-                                id="platform_guidelines" name="platform_guidelines" rows="3">{{ old('platform_guidelines', $content->platform_guidelines) }}</textarea>
-                            @error('platform_guidelines')
+                            <label for="content_text">Contenu {{ $content->type == 'text' ? 'textuel' : 'du lien' }}</label>
+                            <textarea class="form-control @error('content_text') is-invalid @enderror" 
+                                id="content_text" name="content_text" rows="3">{{ old('content_text', $content->content_text) }}</textarea>
+                            @error('content_text')
                                 <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        @endif
+                        
+                        <div class="form-group">
+                            <label for="guidelines">Directives de publication</label>
+                            <div id="guidelines-container">
+                                @if(old('guidelines', json_decode($content->guidelines ?? '[]')))
+                                    @foreach(old('guidelines', json_decode($content->guidelines ?? '[]')) as $index => $guideline)
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" name="guidelines[]" value="{{ $guideline }}" placeholder="Directive de publication">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-danger remove-guideline"><i class="fas fa-minus"></i></button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" name="guidelines[]" placeholder="Directive de publication">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-danger remove-guideline"><i class="fas fa-minus"></i></button>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary mt-2" id="add-guideline">Ajouter une directive</button>
+                            @error('guidelines')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
                             @enderror
                         </div>
                         
@@ -147,6 +176,29 @@
                                 Exemple: #orange, #digital, #influenceur
                             </small>
                             @error('tags')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status">Statut <span class="text-danger">*</span></label>
+                            <select class="form-control @error('status') is-invalid @enderror" 
+                                id="status" name="status" required>
+                                <option value="draft" {{ old('status', $content->status) == 'draft' ? 'selected' : '' }}>Brouillon</option>
+                                <option value="approved" {{ old('status', $content->status) == 'approved' ? 'selected' : '' }}>Approuvé</option>
+                                <option value="archived" {{ old('status', $content->status) == 'archived' ? 'selected' : '' }}>Archivé</option>
+                            </select>
+                            @error('status')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="publication_date">Date de publication</label>
+                            <input type="date" class="form-control @error('publication_date') is-invalid @enderror" 
+                                id="publication_date" name="publication_date" 
+                                value="{{ old('publication_date', $content->publication_date ? $content->publication_date->format('Y-m-d') : '') }}">
+                            @error('publication_date')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>
@@ -191,6 +243,38 @@
             var nextSibling = e.target.nextElementSibling;
             nextSibling.innerText = fileName;
         });
+        
+        // Script pour ajouter/supprimer des directives de publication
+        document.getElementById('add-guideline').addEventListener('click', function() {
+            var container = document.getElementById('guidelines-container');
+            var newRow = document.createElement('div');
+            newRow.className = 'input-group mb-2';
+            newRow.innerHTML = `
+                <input type="text" class="form-control" name="guidelines[]" placeholder="Directive de publication">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-danger remove-guideline"><i class="fas fa-minus"></i></button>
+                </div>
+            `;
+            container.appendChild(newRow);
+            
+            // Ajouter l'événement de suppression au nouveau bouton
+            newRow.querySelector('.remove-guideline').addEventListener('click', removeGuideline);
+        });
+        
+        // Ajouter l'événement de suppression aux boutons existants
+        document.querySelectorAll('.remove-guideline').forEach(function(button) {
+            button.addEventListener('click', removeGuideline);
+        });
+        
+        function removeGuideline() {
+            var row = this.closest('.input-group');
+            if (document.querySelectorAll('#guidelines-container .input-group').length > 1) {
+                row.remove();
+            } else {
+                // Si c'est la dernière ligne, vider le champ plutôt que de supprimer
+                row.querySelector('input').value = '';
+            }
+        }
     });
 </script>
 @endpush

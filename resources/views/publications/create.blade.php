@@ -154,14 +154,14 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="content_id">Contenu utilisé (optionnel)</label>
+                            <label for="content_id">Contenu principal utilisé (optionnel)</label>
                             <div class="select2-orange">
                                 <select class="form-control" id="content_id" name="content_id">
                                     <option value="">Aucun contenu spécifique</option>
                                     @foreach($contents as $content)
                                         <option value="{{ $content->id }}" {{ old('content_id') == $content->id ? 'selected' : '' }}
                                                 data-campaign-id="{{ $content->campaign_id }}">
-                                            {{ $content->title }} ({{ ucfirst($content->content_type) }})
+                                            {{ $content->title ?? 'Sans titre' }} ({{ ucfirst($content->type) }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -175,19 +175,19 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Contenu utilisé (optionnel)</label>
+                            <label for="contents">Contenus additionnels utilisés (optionnel)</label>
                             <div class="select2-orange">
                                 <select class="form-control" multiple id="contents" name="contents[]">
                                     @foreach($contents as $content)
                                         <option value="{{ $content->id }}" {{ in_array($content->id, old('contents', [])) ? 'selected' : '' }}
                                                 data-campaign-id="{{ $content->campaign_id }}">
-                                            {{ $content->title }} ({{ ucfirst($content->content_type) }})
+                                            {{ $content->title ?? 'Sans titre' }} ({{ ucfirst($content->type) }})
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
                             <small class="form-text text-muted">
-                                Sélectionnez les contenus de la campagne utilisés dans cette publication
+                                Sélectionnez les contenus additionnels de la campagne utilisés dans cette publication
                             </small>
                         </div>
                         
@@ -290,27 +290,182 @@
             nextSibling.innerText = fileName;
         });
         
-        // Si disponible, initialiser Select2 pour améliorer l'UX des listes déroulantes
+        // Initialiser Select2 pour améliorer l'UX des listes déroulantes
         if (typeof $ !== 'undefined' && $.fn.select2) {
+            // Configuration générale pour tous les select
+            $.fn.select2.defaults.set('theme', 'bootstrap4');
+            $.fn.select2.defaults.set('width', '100%');
+            
+            // Select pour les missions avec style amélioré
             $('#assignment_id').select2({
                 placeholder: 'Sélectionner une mission',
-                allowClear: true
+                allowClear: true,
+                templateResult: formatAssignment,
+                templateSelection: formatAssignment
             });
             
+            // Select pour les plateformes avec icônes
             $('#platform').select2({
                 placeholder: 'Sélectionner une plateforme',
-                allowClear: true
+                allowClear: true,
+                templateResult: formatPlatform,
+                templateSelection: formatPlatform
             });
             
+            // Select pour le type de publication
+            $('#post_type').select2({
+                placeholder: 'Sélectionner un type',
+                allowClear: true,
+                templateResult: formatPostType,
+                templateSelection: formatPostType
+            });
+            
+            // Select pour le statut
+            $('#status').select2({
+                placeholder: 'Sélectionner un statut',
+                allowClear: true,
+                templateResult: formatStatus,
+                templateSelection: formatStatus
+            });
+            
+            // Select pour le contenu principal
             $('#content_id').select2({
                 placeholder: 'Sélectionner un contenu',
                 allowClear: true
             });
             
+            // Select pour les contenus multiples
             $('#contents').select2({
                 placeholder: 'Sélectionner les contenus utilisés',
                 allowClear: true
             });
+            
+            // Fonction pour formater les options de mission
+            function formatAssignment(assignment) {
+                if (!assignment.id) {
+                    return assignment.text;
+                }
+                
+                var $assignment = $(
+                    '<span><i class="fas fa-tasks mr-2"></i> ' + assignment.text + '</span>'
+                );
+                return $assignment;
+            };
+            
+            // Fonction pour formater les options de plateforme avec icônes
+            function formatPlatform(platform) {
+                if (!platform.id) {
+                    return platform.text;
+                }
+                
+                var icon = '';
+                var color = '';
+                
+                switch(platform.id) {
+                    case 'instagram':
+                        icon = 'fa-instagram';
+                        color = 'text-danger';
+                        break;
+                    case 'facebook':
+                        icon = 'fa-facebook';
+                        color = 'text-primary';
+                        break;
+                    case 'twitter':
+                        icon = 'fa-twitter';
+                        color = 'text-info';
+                        break;
+                    case 'tiktok':
+                        icon = 'fa-tiktok';
+                        color = 'text-dark';
+                        break;
+                    case 'youtube':
+                        icon = 'fa-youtube';
+                        color = 'text-danger';
+                        break;
+                    case 'linkedin':
+                        icon = 'fa-linkedin';
+                        color = 'text-primary';
+                        break;
+                    default:
+                        icon = 'fa-globe';
+                        color = 'text-secondary';
+                }
+                
+                var $platform = $(
+                    '<span><i class="fab ' + icon + ' mr-2 ' + color + '"></i> ' + platform.text + '</span>'
+                );
+                return $platform;
+            };
+            
+            // Fonction pour formater les options de type de publication
+            function formatPostType(type) {
+                if (!type.id) {
+                    return type.text;
+                }
+                
+                var icon = '';
+                
+                switch(type.id) {
+                    case 'post':
+                        icon = 'fa-image';
+                        break;
+                    case 'story':
+                        icon = 'fa-clock';
+                        break;
+                    case 'reel':
+                        icon = 'fa-video';
+                        break;
+                    case 'video':
+                        icon = 'fa-film';
+                        break;
+                    case 'short':
+                        icon = 'fa-play-circle';
+                        break;
+                    case 'article':
+                        icon = 'fa-newspaper';
+                        break;
+                    default:
+                        icon = 'fa-file';
+                }
+                
+                var $type = $(
+                    '<span><i class="fas ' + icon + ' mr-2"></i> ' + type.text + '</span>'
+                );
+                return $type;
+            };
+            
+            // Fonction pour formater les options de statut
+            function formatStatus(status) {
+                if (!status.id) {
+                    return status.text;
+                }
+                
+                var icon = '';
+                var color = '';
+                
+                switch(status.id) {
+                    case 'pending':
+                        icon = 'fa-clock';
+                        color = 'text-warning';
+                        break;
+                    case 'verified':
+                        icon = 'fa-check-circle';
+                        color = 'text-success';
+                        break;
+                    case 'rejected':
+                        icon = 'fa-times-circle';
+                        color = 'text-danger';
+                        break;
+                    default:
+                        icon = 'fa-question-circle';
+                        color = 'text-secondary';
+                }
+                
+                var $status = $(
+                    '<span><i class="fas ' + icon + ' mr-2 ' + color + '"></i> ' + status.text + '</span>'
+                );
+                return $status;
+            };
             
             // Filtrer les contenus en fonction de la campagne sélectionnée
             $('#assignment_id').on('change', function() {

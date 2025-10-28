@@ -86,7 +86,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Mes influenceurs</h3>
+                <h3 class="card-title">Mes ambassadeurs</h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
                         <i class="fas fa-minus"></i>
@@ -129,7 +129,7 @@
             </div>
             <!-- /.card-body -->
             <div class="card-footer clearfix">
-                <a href="{{ route('users.index', ['role' => 'influencer']) }}" class="btn btn-sm btn-secondary float-right">Voir tous les influenceurs</a>
+                <a href="{{ route('users.index', ['role' => 'influencer']) }}" class="btn btn-sm btn-secondary float-right">Voir tous les Ambassadeurs</a>
             </div>
             <!-- /.card-footer -->
         </div>

@@ -25,6 +25,7 @@ class SupervisorController extends Controller
         $supervisors = User::where('role', 'supervisor')
             ->withCount('influencers')
             ->withCount('supervisorAssignments')
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
             
         return view('supervisors.index', compact('supervisors'));
@@ -253,7 +254,7 @@ class SupervisorController extends Controller
     }
     
     /**
-     * Assigner un influenceur à un superviseur
+     * Assigner des influenceurs à un superviseur
      */
     public function assignInfluencer(Request $request, User $supervisor)
     {
@@ -267,35 +268,59 @@ class SupervisorController extends Controller
         
         // Validation des données
         $validated = $request->validate([
-            'influencer_id' => 'required|exists:users,id',
+            'influencer_ids' => 'required|array',
+            'influencer_ids.*' => 'exists:users,id',
         ]);
         
-        // Récupérer l'influenceur
-        $influencer = User::where('id', $validated['influencer_id'])
-            ->where('role', 'influencer')
-            ->firstOrFail();
+        $successCount = 0;
+        $errorCount = 0;
+        $successNames = [];
+        
+        foreach ($validated['influencer_ids'] as $influencerId) {
+            // Récupérer l'influenceur
+            $influencer = User::where('id', $influencerId)
+                ->where('role', 'influencer')
+                ->first();
+                
+            if (!$influencer) {
+                $errorCount++;
+                continue;
+            }
             
-        // Vérifier si l'influenceur est déjà assigné à un superviseur
-        $existingSupervisor = DB::table('supervisor_influencer')
-            ->where('influencer_id', $influencer->id)
-            ->first();
+            // Vérifier si l'influenceur est déjà assigné à un superviseur
+            $existingSupervisor = DB::table('supervisor_influencer')
+                ->where('influencer_id', $influencer->id)
+                ->first();
+                
+            // Ne permettre l'assignation que pour les influenceurs sans superviseur
+            if ($existingSupervisor) {
+                $errorCount++;
+                continue;
+            }
             
-        // Ne permettre l'assignation que pour les influenceurs sans superviseur
-        if ($existingSupervisor) {
-            return redirect()->route('supervisors.show', $supervisor)
-                ->with('error', "L'influenceur {$influencer->name} est déjà assigné à un autre superviseur. Utilisez l'écran de gestion de cet influenceur pour le réassigner.");
+            // Créer une nouvelle assignation
+            DB::table('supervisor_influencer')->insert([
+                'supervisor_id' => $supervisor->id,
+                'influencer_id' => $influencer->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            $successCount++;
+            $successNames[] = $influencer->name;
         }
         
-        // Créer une nouvelle assignation
-        DB::table('supervisor_influencer')->insert([
-            'supervisor_id' => $supervisor->id,
-            'influencer_id' => $influencer->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        
-        return redirect()->route('supervisors.show', $supervisor)
-            ->with('success', "L'influenceur {$influencer->name} a été assigné avec succès à ce superviseur.");
+        if ($successCount > 0) {
+            $message = $successCount === 1 
+                ? "L'ambassadeur {$successNames[0]} a été assigné avec succès à ce superviseur." 
+                : "$successCount ambassadeurs ont été assignés avec succès à ce superviseur.";
+            
+            return redirect()->route('supervisors.show', $supervisor)
+                ->with('success', $message);
+        } else {
+            return redirect()->route('supervisors.show', $supervisor)
+                ->with('error', "Aucun ambassadeur n'a pu être assigné. Veuillez vérifier qu'ils ne sont pas déjà assignés à un autre superviseur.");
+        }
     }
     
     /**

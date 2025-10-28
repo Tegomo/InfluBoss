@@ -20,6 +20,58 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Carte de statistiques globales -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-gradient-info">
+                <div class="card-header">
+                    <h3 class="card-title">Vue d'ensemble des statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-success">
+                                <span class="info-box-icon"><i class="far fa-thumbs-up"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Likes</span>
+                                    <span class="info-box-number">{{ number_format($globalStats['likes']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-primary">
+                                <span class="info-box-icon"><i class="far fa-comment"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Commentaires</span>
+                                    <span class="info-box-number">{{ number_format($globalStats['comments']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-warning">
+                                <span class="info-box-icon"><i class="fas fa-share"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Partages</span>
+                                    <span class="info-box-number">{{ number_format($globalStats['shares']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div class="info-box bg-gradient-danger">
+                                <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Engagement total</span>
+                                    <span class="info-box-number">{{ number_format($globalStats['likes'] + $globalStats['comments'] + $globalStats['shares']) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des publications -->
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -42,7 +94,7 @@
                                         <option value="">Toutes</option>
                                         @foreach($campaigns as $campaign)
                                             <option value="{{ $campaign->id }}" {{ request('campaign_id') == $campaign->id ? 'selected' : '' }}>
-                                                {{ $campaign->name }}
+                                                {{ $campaign->title }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -94,7 +146,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Plateforme</th>
-                                    <th>Influenceur</th>
+                                    <th>Embassadeur</th>
                                     <th>Campagne</th>
                                     <th>URL</th>
                                     <th>Statut</th>
@@ -133,9 +185,9 @@
                                         <div><small>{{ ucfirst($publication->platform) }}</small></div>
                                     </td>
                                     <td>{{ $publication->influencer->name ?? 'N/A' }}</td>
-                                    <td>{{ $publication->assignment->campaign->title ?? 'N/A' }}</td>
+                                    <td>{{ $publication->assignment->campaign->name ?? 'N/A' }}</td>
                                     <td>
-                                        <a href="{{ $publication->url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <a href="{{ $publication->post_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                                             <i class="fas fa-external-link-alt"></i> Voir
                                         </a>
                                     </td>

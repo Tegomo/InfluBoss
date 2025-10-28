@@ -52,6 +52,9 @@ class InfluencerApiController extends Controller
         }
         // Admin et super_admin voient tous les influenceurs
         
+        // Trier les influenceurs du plus récent au plus ancien
+        $query->orderBy('created_at', 'desc');
+        
         // Pagination
         $perPage = $request->input('per_page', 15);
         $influencers = $query->paginate($perPage);
