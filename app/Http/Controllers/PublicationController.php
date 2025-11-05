@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PublicationsExport;
 
 class PublicationController extends Controller
 {
@@ -524,5 +526,71 @@ class PublicationController extends Controller
         
         return redirect()->route('publications.index')
             ->with('success', 'Publication supprimée avec succès.');
+    }
+
+    /**
+     * Exporte les publications en Excel
+     */
+    public function export(Request $request)
+    {
+        // Construire la même requête que pour l'index
+        $query = Publication::query();
+        
+        // Filtrage par campagne si spécifié
+        if ($request->filled('campaign_id')) {
+            $query->whereHas('assignment', function($q) use ($request) {
+                $q->where('campaign_id', $request->campaign_id);
+            });
+        }
+        
+        // Filtrage par influenceur si spécifié
+        if ($request->filled('influencer_id')) {
+            $query->where('influencer_id', $request->influencer_id);
+        }
+        
+        // Filtrage par statut si spécifié
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filtrage par plateforme si spécifié
+        if ($request->filled('platform')) {
+            $query->where('platform', $request->platform);
+        }
+        
+        // Pour les influenceurs, montrer seulement leurs propres publications
+        if (Auth::user()->role === 'influencer') {
+            $query->where('influencer_id', Auth::id());
+        }
+        // Pour les superviseurs, montrer seulement les publications des influenceurs qu'ils supervisent
+        elseif (Auth::user()->role === 'supervisor') {
+            // Récupérer les IDs des influenceurs supervisés via la table supervisor_influencer
+            $influencerIds = DB::table('supervisor_influencer')
+                ->where('supervisor_id', Auth::id())
+                ->pluck('influencer_id')
+                ->toArray();
+                
+            // Si aucun influenceur n'est assigné, utiliser un ID impossible pour que la requête ne retourne rien
+            if (empty($influencerIds)) {
+                $query->where('influencer_id', 0); // Aucun utilisateur n'aura cet ID
+            } else {
+                $query->whereIn('influencer_id', $influencerIds);
+            }
+        }
+        
+        $publications = $query->with([
+                'influencer', 
+                'content', 
+                'assignment.campaign',
+                'verifier',
+                'latestStats'
+            ])
+            ->orderByDesc('published_at')
+            ->get();
+        
+        // Générer le nom du fichier avec la date
+        $filename = 'publications_' . now()->format('Y-m-d_His') . '.xlsx';
+        
+        return Excel::download(new PublicationsExport($publications), $filename);
     }
 }
