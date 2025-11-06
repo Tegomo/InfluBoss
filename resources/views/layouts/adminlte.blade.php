@@ -113,8 +113,8 @@
                     </li>
                     @endif
                     
-                    {{-- Menu Influenceurs visible pour les admins et superviseurs --}}
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin' || Auth::user()->role === 'supervisor')
+                    {{-- Menu Influenceurs visible uniquement pour les admins --}}
+                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                     <li class="nav-item">
                         <a href="{{ route('influencers.index') }}" class="nav-link {{ request()->routeIs('influencers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i>
@@ -151,25 +151,33 @@
                     </li>
                     @endcan
                     
-                    {{-- Menu Missions visible pour les admins et superviseurs --}}
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin' || Auth::user()->role === 'supervisor')
+                    {{-- Menu Missions visible pour tous les utilisateurs authentifiés --}}
                     <li class="nav-item">
                         <a href="{{ route('assignments.index') }}" class="nav-link {{ request()->routeIs('assignments.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-tasks"></i>
-                            <p>Missions</p>
+                            <p>
+                                @if(Auth::user()->role === 'influencer')
+                                    Mes Missions
+                                @else
+                                    Missions
+                                @endif
+                            </p>
                         </a>
                     </li>
-                    @endif
                     
-                    {{-- Menu Publications visible pour les admins et superviseurs --}}
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin' || Auth::user()->role === 'supervisor')
+                    {{-- Menu Publications visible pour tous les utilisateurs authentifiés --}}
                     <li class="nav-item">
                         <a href="{{ route('publications.index') }}" class="nav-link {{ request()->routeIs('publications.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-newspaper"></i>
-                            <p>Publications</p>
+                            <p>
+                                @if(Auth::user()->role === 'influencer')
+                                    Mes Publications
+                                @else
+                                    Publications
+                                @endif
+                            </p>
                         </a>
                     </li>
-                    @endif
                     
                     {{-- Menu Statistiques visible uniquement pour les admins --}}
                     @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')

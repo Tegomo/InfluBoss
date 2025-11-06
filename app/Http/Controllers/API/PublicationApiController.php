@@ -19,7 +19,7 @@ class PublicationApiController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Publication::with(['user', 'campaign', 'latestStats']);
+        $query = Publication::with(['influencer', 'campaign', 'latestStats']);
         
         // Filtrer par statut
         if ($request->has('status')) {
@@ -38,17 +38,17 @@ class PublicationApiController extends Controller
         
         // Filtrer par influenceur
         if ($request->has('influencer_id')) {
-            $query->where('user_id', $request->influencer_id);
+            $query->where('influencer_id', $request->influencer_id);
         }
         
         // Filtrer selon le rôle de l'utilisateur
         if ($user->role === 'influencer') {
             // L'influenceur ne voit que ses propres publications
-            $query->where('user_id', $user->id);
+            $query->where('influencer_id', $user->id);
         } 
         elseif ($user->role === 'supervisor') {
             // Le superviseur voit les publications des influenceurs qu'il supervise
-            $query->whereHas('user', function ($q) use ($user) {
+            $query->whereHas('influencer', function ($q) use ($user) {
                 $q->whereHas('supervisors', function ($q) use ($user) {
                     $q->where('supervisor_id', $user->id);
                 });

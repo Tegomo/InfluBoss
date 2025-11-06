@@ -25,9 +25,23 @@ class AssignmentController extends Controller
         $search = $request->query('search');
 
         $query = Assignment::query()
-            // Si l'utilisateur est un superviseur, ne montrer que ses missions
+            // Si l'utilisateur est un influenceur, ne montrer que ses missions
+            ->when(Auth::user()->role === 'influencer', function($q) {
+                return $q->where('influencer_id', Auth::id());
+            })
+            // Si l'utilisateur est un superviseur, montrer les missions qu'il supervise OU les missions de ses influenceurs assignés
             ->when(Auth::user()->role === 'supervisor', function($q) {
-                return $q->where('supervisor_id', Auth::id());
+                // Récupérer les IDs des influenceurs assignés à ce superviseur
+                $influencerIds = \DB::table('supervisor_influencer')
+                    ->where('supervisor_id', Auth::id())
+                    ->pluck('influencer_id')
+                    ->toArray();
+                
+                // Montrer les missions où le superviseur est directement assigné OU les missions de ses influenceurs
+                return $q->where(function($query) use ($influencerIds) {
+                    $query->where('supervisor_id', Auth::id())
+                          ->orWhereIn('influencer_id', $influencerIds);
+                });
             })
             ->when($campaignId, function($q) use ($campaignId) {
                 return $q->where('campaign_id', $campaignId);
@@ -197,6 +211,16 @@ class AssignmentController extends Controller
      */
     public function edit(Assignment $assignment)
     {
+        // Vérifier que l'utilisateur a le droit de modifier (admin, super_admin ou superviseur)
+        if (Auth::user()->role === 'influencer') {
+            abort(403, 'Vous n\'avez pas l\'autorisation de modifier cette mission.');
+        }
+        
+        // Si c'est un superviseur, vérifier qu'il supervise bien cet assignment
+        if (Auth::user()->role === 'supervisor' && $assignment->supervisor_id !== Auth::id()) {
+            abort(403, 'Vous ne supervisez pas cette mission.');
+        }
+        
         // Charger l'assignment avec ses relations
         $assignment->load(['campaign', 'influencer', 'supervisor']);
         
@@ -242,6 +266,16 @@ class AssignmentController extends Controller
      */
     public function update(Request $request, Assignment $assignment)
     {
+        // Vérifier que l'utilisateur a le droit de modifier (admin, super_admin ou superviseur)
+        if (Auth::user()->role === 'influencer') {
+            abort(403, 'Vous n\'avez pas l\'autorisation de modifier cette mission.');
+        }
+        
+        // Si c'est un superviseur, vérifier qu'il supervise bien cet assignment
+        if (Auth::user()->role === 'supervisor' && $assignment->supervisor_id !== Auth::id()) {
+            abort(403, 'Vous ne supervisez pas cette mission.');
+        }
+        
         $validated = $request->validate([
             'campaign_id' => 'required|exists:campaigns,id',
             'influencer_id' => 'required|exists:users,id',

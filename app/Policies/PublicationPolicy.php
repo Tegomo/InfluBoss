@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Publication;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\DB;
 
 class PublicationPolicy
 {
@@ -39,7 +40,25 @@ class PublicationPolicy
         
         // Les superviseurs peuvent voir les publications des influenceurs qu'ils supervisent
         if ($user->role === 'supervisor') {
-            // Vérifier si le superviseur supervise l'influenceur de cette publication via les assignments
+            // 1. Si la publication a un assignment_id, vérifier via cet assignment
+            if ($publication->assignment_id) {
+                $assignment = \App\Models\Assignment::find($publication->assignment_id);
+                if ($assignment && $assignment->supervisor_id === $user->id) {
+                    return true;
+                }
+            }
+            
+            // 2. Vérifier via la table supervisor_influencer
+            $isSupervisor = \DB::table('supervisor_influencer')
+                ->where('supervisor_id', $user->id)
+                ->where('influencer_id', $publication->influencer_id)
+                ->exists();
+            
+            if ($isSupervisor) {
+                return true;
+            }
+            
+            // 3. Vérifier via les assignments (fallback)
             return \App\Models\Assignment::where('supervisor_id', $user->id)
                 ->where('influencer_id', $publication->influencer_id)
                 ->exists();
@@ -91,7 +110,25 @@ class PublicationPolicy
         
         // Les superviseurs peuvent modifier les publications des influenceurs qu'ils supervisent
         if ($user->role === 'supervisor') {
-            // Vérifier si le superviseur supervise l'influenceur de cette publication via les assignments
+            // 1. Si la publication a un assignment_id, vérifier via cet assignment
+            if ($publication->assignment_id) {
+                $assignment = \App\Models\Assignment::find($publication->assignment_id);
+                if ($assignment && $assignment->supervisor_id === $user->id) {
+                    return true;
+                }
+            }
+            
+            // 2. Vérifier via la table supervisor_influencer
+            $isSupervisor = DB::table('supervisor_influencer')
+                ->where('supervisor_id', $user->id)
+                ->where('influencer_id', $publication->influencer_id)
+                ->exists();
+            
+            if ($isSupervisor) {
+                return true;
+            }
+            
+            // 3. Vérifier via les assignments (fallback)
             return \App\Models\Assignment::where('supervisor_id', $user->id)
                 ->where('influencer_id', $publication->influencer_id)
                 ->exists();
@@ -121,7 +158,25 @@ class PublicationPolicy
         
         // Les superviseurs peuvent supprimer les publications des influenceurs qu'ils supervisent
         if ($user->role === 'supervisor') {
-            // Vérifier si le superviseur supervise l'influenceur de cette publication via les assignments
+            // 1. Si la publication a un assignment_id, vérifier via cet assignment
+            if ($publication->assignment_id) {
+                $assignment = \App\Models\Assignment::find($publication->assignment_id);
+                if ($assignment && $assignment->supervisor_id === $user->id) {
+                    return true;
+                }
+            }
+            
+            // 2. Vérifier via la table supervisor_influencer
+            $isSupervisor = DB::table('supervisor_influencer')
+                ->where('supervisor_id', $user->id)
+                ->where('influencer_id', $publication->influencer_id)
+                ->exists();
+            
+            if ($isSupervisor) {
+                return true;
+            }
+            
+            // 3. Vérifier via les assignments (fallback)
             return \App\Models\Assignment::where('supervisor_id', $user->id)
                 ->where('influencer_id', $publication->influencer_id)
                 ->exists();
@@ -151,7 +206,25 @@ class PublicationPolicy
         
         // Les superviseurs peuvent vérifier les publications des influenceurs qu'ils supervisent
         if ($user->role === 'supervisor') {
-            // Vérifier si le superviseur supervise l'influenceur de cette publication via les assignments
+            // 1. Si la publication a un assignment_id, vérifier via cet assignment
+            if ($publication->assignment_id) {
+                $assignment = \App\Models\Assignment::find($publication->assignment_id);
+                if ($assignment && $assignment->supervisor_id === $user->id) {
+                    return true;
+                }
+            }
+            
+            // 2. Vérifier via la table supervisor_influencer
+            $isSupervisor = DB::table('supervisor_influencer')
+                ->where('supervisor_id', $user->id)
+                ->where('influencer_id', $publication->influencer_id)
+                ->exists();
+            
+            if ($isSupervisor) {
+                return true;
+            }
+            
+            // 3. Vérifier via les assignments (fallback)
             return \App\Models\Assignment::where('supervisor_id', $user->id)
                 ->where('influencer_id', $publication->influencer_id)
                 ->exists();
@@ -176,7 +249,25 @@ class PublicationPolicy
         
         // Les superviseurs peuvent rafraîchir les statistiques des publications des influenceurs qu'ils supervisent
         if ($user->role === 'supervisor') {
-            // Vérifier si le superviseur supervise l'influenceur de cette publication via les assignments
+            // 1. Si la publication a un assignment_id, vérifier via cet assignment
+            if ($publication->assignment_id) {
+                $assignment = \App\Models\Assignment::find($publication->assignment_id);
+                if ($assignment && $assignment->supervisor_id === $user->id) {
+                    return true;
+                }
+            }
+            
+            // 2. Vérifier via la table supervisor_influencer
+            $isSupervisor = DB::table('supervisor_influencer')
+                ->where('supervisor_id', $user->id)
+                ->where('influencer_id', $publication->influencer_id)
+                ->exists();
+            
+            if ($isSupervisor) {
+                return true;
+            }
+            
+            // 3. Vérifier via les assignments (fallback)
             return \App\Models\Assignment::where('supervisor_id', $user->id)
                 ->where('influencer_id', $publication->influencer_id)
                 ->exists();

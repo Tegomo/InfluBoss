@@ -29,9 +29,9 @@ class StatApiController extends Controller
         
         // Base des requêtes selon le rôle de l'utilisateur
         if ($user->role === 'influencer') {
-            $publicationsQuery = Publication::where('user_id', $user->id);
+            $publicationsQuery = Publication::where('influencer_id', $user->id);
         } elseif ($user->role === 'supervisor') {
-            $publicationsQuery = Publication::whereHas('user', function ($query) use ($user) {
+            $publicationsQuery = Publication::whereHas('influencer', function ($query) use ($user) {
                 $query->whereHas('supervisors', function ($q) use ($user) {
                     $q->where('supervisor_id', $user->id);
                 });
@@ -125,9 +125,9 @@ class StatApiController extends Controller
         
         // Base des requêtes selon le rôle de l'utilisateur
         if ($user->role === 'influencer') {
-            $publicationsQuery = Publication::where('user_id', $user->id);
+            $publicationsQuery = Publication::where('influencer_id', $user->id);
         } elseif ($user->role === 'supervisor') {
-            $publicationsQuery = Publication::whereHas('user', function ($query) use ($user) {
+            $publicationsQuery = Publication::whereHas('influencer', function ($query) use ($user) {
                 $query->whereHas('supervisors', function ($q) use ($user) {
                     $q->where('supervisor_id', $user->id);
                 });
@@ -217,9 +217,9 @@ class StatApiController extends Controller
         
         // Base des requêtes selon le rôle de l'utilisateur
         if ($user->role === 'influencer') {
-            $publicationsQuery = Publication::where('user_id', $user->id);
+            $publicationsQuery = Publication::where('influencer_id', $user->id);
         } elseif ($user->role === 'supervisor') {
-            $publicationsQuery = Publication::whereHas('user', function ($query) use ($user) {
+            $publicationsQuery = Publication::whereHas('influencer', function ($query) use ($user) {
                 $query->whereHas('supervisors', function ($q) use ($user) {
                     $q->where('supervisor_id', $user->id);
                 });
@@ -297,9 +297,9 @@ class StatApiController extends Controller
         
         // Base des requêtes selon le rôle de l'utilisateur
         if ($user->role === 'influencer') {
-            $publicationsQuery = Publication::where('user_id', $user->id);
+            $publicationsQuery = Publication::where('influencer_id', $user->id);
         } elseif ($user->role === 'supervisor') {
-            $publicationsQuery = Publication::whereHas('user', function ($query) use ($user) {
+            $publicationsQuery = Publication::whereHas('influencer', function ($query) use ($user) {
                 $query->whereHas('supervisors', function ($q) use ($user) {
                     $q->where('supervisor_id', $user->id);
                 });
@@ -322,7 +322,7 @@ class StatApiController extends Controller
         }
         
         if ($influencerId) {
-            $publicationsQuery->where('user_id', $influencerId);
+            $publicationsQuery->where('influencer_id', $influencerId);
         }
         
         $publicationIds = $publicationsQuery->pluck('id')->toArray();
@@ -364,7 +364,7 @@ class StatApiController extends Controller
         
         // Récupérer les publications avec leurs statistiques, triées par engagement
         $publications = Publication::whereIn('id', $publicationIds)
-            ->with(['user:id,name,email,profile_photo', 'campaign:id,name', 'latestStats'])
+            ->with(['influencer:id,name,email,profile_photo', 'campaign:id,name', 'latestStats'])
             ->get()
             ->map(function ($publication) {
                 $stats = $publication->latestStats;

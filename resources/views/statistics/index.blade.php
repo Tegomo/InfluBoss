@@ -31,6 +31,9 @@
                 <a href="{{ route('admin.statistics.export-pdf') }}" class="btn btn-danger">
                     <i class="fas fa-file-pdf mr-1"></i> Exporter PDF
                 </a>
+                <a href="{{ route('admin.statistics.export-raw-data') }}" class="btn btn-primary">
+                    <i class="fas fa-database mr-1"></i> Exporter Données Brutes
+                </a>
             </div>
         </div>
     </div>

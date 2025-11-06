@@ -14,6 +14,7 @@ use App\Models\Publication;
 use App\Models\Note;
 use Carbon\Carbon;
 use App\Exports\StatisticsExport;
+use App\Exports\RawDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -221,5 +222,17 @@ class StatisticsController extends Controller
         
         $date = Carbon::now()->format('Y-m-d_H-i-s');
         return $pdf->download("statistiques_influboss_{$date}.pdf");
+    }
+    
+    /**
+     * Exporte toutes les données brutes au format Excel avec plusieurs feuilles
+     */
+    public function exportRawData()
+    {
+        // L'accès est déjà protégé par le middleware role:admin,super_admin
+        $export = new RawDataExport();
+        
+        $date = Carbon::now()->format('Y-m-d_H-i-s');
+        return Excel::download($export, "donnees_brutes_influboss_{$date}.xlsx");
     }
 }

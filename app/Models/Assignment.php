@@ -71,6 +71,14 @@ class Assignment extends Model
     }
 
     /**
+     * Get the content associated with this assignment
+     */
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
+    }
+
+    /**
      * Get the publications associated with this assignment
      */
     public function publications()

@@ -102,7 +102,7 @@ class SupervisorController extends Controller
         $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
             $query->where('supervisor_id', $supervisor->id);
         })
-        ->where('status', 'pending')
+        ->where('status', 'pending_verification')
         ->with(['influencer', 'assignment.campaign'])
         ->latest('published_at')
         ->take(5)
@@ -218,7 +218,7 @@ class SupervisorController extends Controller
         $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
                 $query->where('supervisor_id', $supervisor->id);
             })
-            ->where('status', 'pending')
+            ->where('status', 'pending_verification')
             ->with(['influencer', 'assignment.campaign'])
             ->latest('published_at')
             ->take(5)
@@ -339,7 +339,7 @@ class SupervisorController extends Controller
         $pendingPublications = Publication::whereHas('assignment', function($query) use ($supervisor) {
                 $query->where('supervisor_id', $supervisor->id);
             })
-            ->where('status', 'pending')
+            ->where('status', 'pending_verification')
             ->with(['influencer', 'assignment.campaign'])
             ->latest('published_at')
             ->paginate(10);

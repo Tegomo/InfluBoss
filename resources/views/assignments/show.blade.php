@@ -94,11 +94,13 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Informations sur la mission</h3>
+                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin' || Auth::user()->role === 'supervisor')
                     <div class="card-tools">
                         <a href="{{ route('assignments.edit', $assignment) }}" class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i> Modifier
                         </a>
                     </div>
+                    @endif
                 </div>
                 <div class="card-body">
                     <div class="row">

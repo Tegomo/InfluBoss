@@ -125,12 +125,14 @@
                                         <a href="{{ route('contents.show', $content) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('contents.edit', $content) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
                                         <a href="{{ route('contents.download', $content) }}" class="btn btn-sm btn-success">
                                             <i class="fas fa-download"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'influencer')
+                                        <a href="{{ route('contents.edit', $content) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                                         <form action="{{ route('contents.destroy', $content) }}" method="POST" 
                                               onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?');"
                                               style="display: inline-block;">
@@ -140,6 +142,8 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        @endif
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

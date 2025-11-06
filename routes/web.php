@@ -153,6 +153,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
         Route::get('/statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
         Route::get('/statistics/export-pdf', [StatisticsController::class, 'exportPdf'])->name('statistics.export-pdf');
+        Route::get('/statistics/export-raw-data', [StatisticsController::class, 'exportRawData'])->name('statistics.export-raw-data');
     });
 });
 

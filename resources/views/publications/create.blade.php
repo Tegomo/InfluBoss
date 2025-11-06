@@ -260,7 +260,7 @@
                             <label for="status">Statut <span class="text-danger">*</span></label>
                             <select class="form-control @error('status') is-invalid @enderror" 
                                 id="status" name="status" required>
-                                <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>En attente</option>
+                                <option value="pending_verification" {{ old('status') == 'pending_verification' ? 'selected' : '' }}>En attente de vérification</option>
                                 <option value="verified" {{ old('status') == 'verified' ? 'selected' : '' }}>Vérifiée</option>
                             </select>
                             @error('status')

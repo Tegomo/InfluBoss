@@ -34,8 +34,8 @@
                         <tbody>
                             @forelse($assignments as $assignment)
                             <tr>
-                                <td>{{ $assignment->campaign->name }}</td>
-                                <td>{{ $assignment->content->title }}</td>
+                                <td>{{ $assignment->campaign->name ?? 'N/A' }}</td>
+                                <td>{{ $assignment->content->title ?? 'N/A' }}</td>
                                 <td>
                                     @php
                                         $badgeClass = 'secondary';

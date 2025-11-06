@@ -95,21 +95,21 @@ class DashboardController extends Controller
         if ($user->role === 'influencer') {
             // Récupérer les missions assignées à cet influenceur
             $assignments = Assignment::where('influencer_id', $user->id)
-                ->with('campaign')
+                ->with(['campaign', 'content'])
                 ->where('status', '!=', 'completed')
                 ->get();
                 
             // Récupérer les publications de cet influenceur
-            $publications = Publication::where('user_id', $user->id)
+            $publications = Publication::where('influencer_id', $user->id)
                 ->with(['assignment.campaign', 'latestStats'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
                 
             // Compter les publications par statut
-            $pendingCount = Publication::where('user_id', $user->id)->where('status', 'pending')->count();
-            $verifiedCount = Publication::where('user_id', $user->id)->where('status', 'verified')->count();
-            $rejectedCount = Publication::where('user_id', $user->id)->where('status', 'rejected')->count();
+            $pendingCount = Publication::where('influencer_id', $user->id)->where('status', 'pending_verification')->count();
+            $verifiedCount = Publication::where('influencer_id', $user->id)->where('status', 'verified')->count();
+            $rejectedCount = Publication::where('influencer_id', $user->id)->where('status', 'rejected')->count();
             
             return view('dashboard.influencer', compact('assignments', 'publications', 'pendingCount', 'verifiedCount', 'rejectedCount'));
         }

@@ -142,21 +142,29 @@ class PublicationController extends Controller
         
         // Déterminer les assignations à afficher selon le rôle
         if ($user->role === 'influencer') {
-            // Pour les influenceurs : uniquement leurs propres assignations
+            // Pour les influenceurs : uniquement leurs propres assignations actives
             $assignments = Assignment::where('influencer_id', Auth::id())
                 ->with('campaign')
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         } elseif ($user->role === 'supervisor') {
-            // Pour les superviseurs : les assignations qu'ils supervisent
-            $assignments = Assignment::where('supervisor_id', Auth::id())
+            // Pour les superviseurs : les assignations qu'ils supervisent OU les assignations de leurs influenceurs
+            $influencerIds = \DB::table('supervisor_influencer')
+                ->where('supervisor_id', Auth::id())
+                ->pluck('influencer_id')
+                ->toArray();
+            
+            $assignments = Assignment::where(function($query) use ($influencerIds) {
+                    $query->where('supervisor_id', Auth::id())
+                          ->orWhereIn('influencer_id', $influencerIds);
+                })
                 ->with(['campaign', 'influencer'])
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         } elseif (in_array($user->role, ['admin', 'super_admin'])) {
-            // Pour les admins : toutes les assignations
+            // Pour les admins : toutes les assignations actives
             $assignments = Assignment::with(['campaign', 'influencer', 'supervisor'])
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         }
             
@@ -181,8 +189,17 @@ class PublicationController extends Controller
             // Vérifier que l'utilisateur est autorisé à accéder à cette assignation selon son rôle
             if ($user->role === 'influencer' && $selectedAssignment->influencer_id !== Auth::id()) {
                 abort(403, 'Vous n\'êtes pas autorisé à publier pour cette assignation.');
-            } elseif ($user->role === 'supervisor' && $selectedAssignment->supervisor_id !== Auth::id()) {
-                abort(403, 'Vous n\'êtes pas autorisé à publier pour cette assignation.');
+            } elseif ($user->role === 'supervisor') {
+                // Vérifier si le superviseur est directement assigné OU si l'influenceur lui est assigné
+                $isSupervisor = $selectedAssignment->supervisor_id === Auth::id() ||
+                    \DB::table('supervisor_influencer')
+                        ->where('supervisor_id', Auth::id())
+                        ->where('influencer_id', $selectedAssignment->influencer_id)
+                        ->exists();
+                
+                if (!$isSupervisor) {
+                    abort(403, 'Vous n\'êtes pas autorisé à publier pour cette assignation.');
+                }
             } 
             // Les admins peuvent accéder à toutes les assignations, pas besoin de vérification
         }
@@ -213,7 +230,7 @@ class PublicationController extends Controller
             'shares' => 'nullable|integer|min:0',
             'views' => 'nullable|integer|min:0',
             'engagement_rate' => 'nullable|numeric|min:0',
-            'status' => 'required|in:pending,verified',
+            'status' => 'required|in:pending_verification,verified',
         ]);
         
         // Récupérer l'assignment
@@ -222,8 +239,17 @@ class PublicationController extends Controller
         // Vérifier les autorisations selon le rôle de l'utilisateur
         if ($user->role === 'influencer' && $assignment->influencer_id !== $user->id) {
             return back()->withErrors(['assignment_id' => 'Cette assignation ne vous appartient pas.']);
-        } elseif ($user->role === 'supervisor' && $assignment->supervisor_id !== $user->id) {
-            return back()->withErrors(['assignment_id' => 'Cette assignation n\'est pas sous votre supervision.']);
+        } elseif ($user->role === 'supervisor') {
+            // Vérifier si le superviseur est directement assigné OU si l'influenceur lui est assigné
+            $isSupervisor = $assignment->supervisor_id === $user->id ||
+                \DB::table('supervisor_influencer')
+                    ->where('supervisor_id', $user->id)
+                    ->where('influencer_id', $assignment->influencer_id)
+                    ->exists();
+            
+            if (!$isSupervisor) {
+                return back()->withErrors(['assignment_id' => 'Cette assignation n\'est pas sous votre supervision.']);
+            }
         }
         // Les admins peuvent accéder à toutes les assignations, pas besoin de vérification
         
@@ -250,7 +276,7 @@ class PublicationController extends Controller
             'published_at' => $validated['published_at'],
             'embed_code' => $validated['embed_code'] ?? null,
             // Si l'utilisateur est un superviseur ou un admin, la publication est automatiquement vérifiée
-            'status' => in_array($user->role, ['supervisor', 'admin', 'super_admin']) ? 'verified' : 'pending',
+            'status' => in_array($user->role, ['supervisor', 'admin', 'super_admin']) ? 'verified' : 'pending_verification',
         ];
         
         $publication = Publication::create($publicationData);
@@ -348,18 +374,18 @@ class PublicationController extends Controller
             // Pour les influenceurs : uniquement leurs propres assignations
             $assignments = Assignment::where('influencer_id', Auth::id())
                 ->with('campaign')
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         } elseif ($user->role === 'supervisor') {
             // Pour les superviseurs : les assignations qu'ils supervisent
             $assignments = Assignment::where('supervisor_id', Auth::id())
                 ->with(['campaign', 'influencer'])
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         } elseif (in_array($user->role, ['admin', 'super_admin'])) {
             // Pour les admins : toutes les assignations
             $assignments = Assignment::with(['campaign', 'influencer', 'supervisor'])
-                ->where('status', 'accepted')
+                ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         }
         

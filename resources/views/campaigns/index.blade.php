@@ -75,12 +75,14 @@
                                         <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'influencer')
                                         <a href="{{ route('campaigns.edit', $campaign) }}" class="btn btn-sm btn-warning">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="{{ route('campaigns.dashboard', $campaign) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-chart-bar"></i>
                                         </a>
+                                        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                                         <form action="{{ route('campaigns.destroy', $campaign) }}" method="POST" 
                                             onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?');"
                                             style="display: inline-block;">
@@ -90,6 +92,8 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        @endif
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
