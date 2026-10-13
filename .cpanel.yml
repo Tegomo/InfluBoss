@@ -1,0 +1,8 @@
+---
+# Déploiement cPanel (Git Version Control > Manage > Pull or Deploy > « Deploy HEAD Commit »).
+# Toute la logique est dans deploy/cpanel-deploy.sh ; la configuration propre au serveur
+# (chemin du site, binaire PHP…) est lue dans ~/.influboss-deploy.env, hors du dépôt.
+# Voir docs/deploiement-cpanel.md.
+deployment:
+  tasks:
+    - /bin/bash deploy/cpanel-deploy.sh
