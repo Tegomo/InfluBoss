@@ -204,6 +204,8 @@ class PublicationController extends Controller
             // Les admins peuvent accéder à toutes les assignations, pas besoin de vérification
         }
         
+        $assignments->load('deliverables');
+
         return view('publications.create', compact('assignments', 'selectedAssignment', 'contents'));
     }
 
@@ -217,6 +219,7 @@ class PublicationController extends Controller
         
         $validated = $request->validate([
             'assignment_id' => 'required|exists:assignments,id',
+            'deliverable_id' => $this->deliverableRule((int) $request->input('assignment_id')),
             'content_id' => 'nullable|exists:contents,id',
             'platform' => 'required|string|in:facebook,instagram,twitter,tiktok,youtube,linkedin',
             'post_url' => 'required|url',
@@ -267,6 +270,7 @@ class PublicationController extends Controller
         // Créer la publication
         $publicationData = [
             'assignment_id' => $validated['assignment_id'],
+            'deliverable_id' => $validated['deliverable_id'] ?? null,
             'content_id' => $validated['content_id'] ?? null,
             'influencer_id' => $influencerId,
             'platform' => $validated['platform'],
@@ -393,6 +397,9 @@ class PublicationController extends Controller
             ->where('status', 'ready')
             ->get();
             
+        $assignments->load('deliverables');
+        $publication->assignment?->loadMissing('deliverables');
+
         return view('publications.edit', compact('publication', 'availableContents', 'assignments'));
     }
 
@@ -405,6 +412,7 @@ class PublicationController extends Controller
         Gate::authorize('update', $publication);
         
         $validated = $request->validate([
+            'deliverable_id' => $this->deliverableRule((int) $publication->assignment_id),
             'content_id' => 'nullable|exists:contents,id',
             'platform' => 'required|string|in:facebook,instagram,twitter,tiktok,youtube,linkedin',
             'post_url' => 'required|url',
@@ -550,5 +558,16 @@ class PublicationController extends Controller
         
         return redirect()->route('publications.index')
             ->with('success', 'Publication supprimée avec succès.');
+    }
+
+    /**
+     * Livrable facultatif, qui doit appartenir à la mission de la publication.
+     */
+    private function deliverableRule(int $assignmentId): array
+    {
+        return [
+            'nullable',
+            \Illuminate\Validation\Rule::exists('deliverables', 'id')->where('assignment_id', $assignmentId),
+        ];
     }
 }

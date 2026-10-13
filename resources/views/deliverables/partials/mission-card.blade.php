@@ -51,6 +51,9 @@
                         <td>{{ (int) $deliverable->verified_count }} / {{ (int) $deliverable->submitted_count }} / {{ $deliverable->quantity }}</td>
                         <td><span class="badge badge-{{ $deliverable->status_badge }}">{{ $deliverable->status_label }}</span></td>
                         <td class="text-right text-nowrap">
+                            @if($deliverable->status !== \App\Models\Deliverable::STATUS_VALIDATED && in_array($assignment->status, ['accepted', 'in_progress']) && (auth()->id() === $assignment->influencer_id || auth()->user()->can('update', $deliverable)))
+                            <a href="{{ route('publications.create', ['assignment_id' => $assignment->id, 'deliverable_id' => $deliverable->id]) }}" class="btn btn-xs btn-success" title="Déclarer une publication pour ce livrable"><i class="fas fa-paper-plane"></i> Déclarer</a>
+                            @endif
                             @can('update', $deliverable)
                             <a href="{{ route('deliverables.edit', $deliverable) }}" class="btn btn-xs btn-primary" title="Modifier"><i class="fas fa-edit"></i></a>
                             @endcan

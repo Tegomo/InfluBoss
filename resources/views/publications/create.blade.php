@@ -51,6 +51,9 @@
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                @include('publications.partials.deliverable-select', [
+                                    'selectedDeliverableId' => old('deliverable_id', request('deliverable_id')),
+                                ])
                             </div>
                             
                             <div class="col-md-6">

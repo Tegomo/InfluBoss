@@ -51,6 +51,11 @@
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                @include('publications.partials.deliverable-select', [
+                                    'assignments' => collect([$publication->assignment])->filter(),
+                                    'selectedDeliverableId' => old('deliverable_id', $publication->deliverable_id),
+                                    'filterByMission' => false,
+                                ])
                             </div>
                             
                             <div class="col-md-6">
