@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\FollowerSnapshot;
+use App\Models\LegalDocument;
 use App\Models\SocialAccount;
 use App\Models\User;
 use App\Services\InfluencerStatsService;
@@ -155,6 +157,16 @@ class InfluencerController extends Controller
                 ];
             });
 
+        // Contrats visibles par l'utilisateur (un superviseur non lié ne voit rien) et documents légaux
+        // (admins et l'influenceur lui-même uniquement).
+        $contracts = Contract::visibleTo(Auth::user())
+            ->where('influencer_id', $influencer->id)
+            ->orderByDesc('end_date')
+            ->get();
+        $currentContract = $contracts->firstWhere('status', Contract::STATUS_ACTIVE);
+        $canSeeDocuments = Gate::allows('viewAny', [LegalDocument::class, $influencer]);
+        $legalDocuments = $canSeeDocuments ? $influencer->legalDocuments()->with('uploader')->get() : collect();
+
         return view('influencers.show', compact(
             'influencer',
             'assignments',
@@ -162,7 +174,11 @@ class InfluencerController extends Controller
             'campaignResults',
             'campaignTotals',
             'followerChart',
-            'platformCards'
+            'platformCards',
+            'contracts',
+            'currentContract',
+            'canSeeDocuments',
+            'legalDocuments'
         ));
     }
 

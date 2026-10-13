@@ -79,6 +79,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('legal-documents.download');
     Route::delete('/legal-documents/{legalDocument}', [\App\Http\Controllers\LegalDocumentController::class, 'destroy'])
         ->name('legal-documents.destroy');
+
+    // Notifications (cloche)
+    Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])
+        ->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll'])
+        ->name('notifications.read-all');
         
     // Routes pour l'import/export des influenceurs
     Route::get('/influencers-import-export', [\App\Http\Controllers\InfluencerImportExportController::class, 'index'])

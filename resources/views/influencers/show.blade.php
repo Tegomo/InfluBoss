@@ -72,6 +72,18 @@ Ambassadeur : {{ $influencer->name }}
                         <b>Missions</b> <a class="float-right">{{ $assignments->count() }}</a>
                     </li>
                     <li class="list-group-item">
+                        <b>Contrat en cours</b>
+                        <span class="float-right text-right">
+                            @if($currentContract)
+                                <a href="{{ route('contracts.show', $currentContract) }}">{{ $currentContract->type_label }}</a>
+                                <small class="text-muted">jusqu'au {{ $currentContract->end_date->format('d/m/Y') }}</small>
+                                @include('contracts.partials.remaining-badge', ['contract' => $currentContract])
+                            @else
+                                <span class="text-muted">Aucun</span>
+                            @endif
+                        </span>
+                    </li>
+                    <li class="list-group-item">
                         <b>Statut</b>
                         <span class="float-right">
                             @if($influencer->is_active)
@@ -177,6 +189,10 @@ Ambassadeur : {{ $influencer->name }}
             <div class="card-header p-2">
                 <ul class="nav nav-pills">
                     <li class="nav-item"><a class="nav-link active" href="#campaigns" data-toggle="tab">Campagnes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contracts" data-toggle="tab">Contrats <span class="badge badge-light">{{ $contracts->count() }}</span></a></li>
+                    @if($canSeeDocuments)
+                    <li class="nav-item"><a class="nav-link" href="#documents" data-toggle="tab">Documents <span class="badge badge-light">{{ $legalDocuments->count() }}</span></a></li>
+                    @endif
                     <li class="nav-item"><a class="nav-link" href="#publications" data-toggle="tab">Publications</a></li>
                     <li class="nav-item"><a class="nav-link" href="#stats" data-toggle="tab">Statistiques</a></li>
                 </ul>
@@ -266,6 +282,139 @@ Ambassadeur : {{ $influencer->name }}
                         </div>
                         @endif
                     </div>
+
+                    {{-- Contrats --}}
+                    <div class="tab-pane" id="contracts">
+                        @can('create', \App\Models\Contract::class)
+                        <div class="text-right mb-2">
+                            <a href="{{ route('contracts.create', ['influencer' => $influencer->id]) }}" class="btn btn-sm btn-primary"><i class="fas fa-plus mr-1"></i> Nouveau contrat</a>
+                        </div>
+                        @endcan
+                        @if($contracts->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th class="text-right">Montant (FCFA)</th>
+                                        <th>Modalités de paiement</th>
+                                        <th>Statut</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($contracts as $contract)
+                                    <tr>
+                                        <td>{{ $contract->type_label }}</td>
+                                        <td>
+                                            {{ $contract->start_date->format('d/m/Y') }} – {{ $contract->end_date->format('d/m/Y') }}
+                                            @include('contracts.partials.remaining-badge')
+                                        </td>
+                                        <td class="text-right">{{ $contract->amount !== null ? number_format((float) $contract->amount, 0, ',', ' ') : '—' }}</td>
+                                        <td class="small">{{ \Illuminate\Support\Str::limit($contract->payment_terms ?? '—', 60) }}</td>
+                                        <td><span class="badge badge-{{ $contract->status_badge }}">{{ $contract->status_label }}</span></td>
+                                        <td class="text-right text-nowrap">
+                                            @if($contract->file_path)
+                                                <a href="{{ route('contracts.download', $contract) }}" class="btn btn-sm btn-secondary" title="Télécharger {{ $contract->file_original_name }}"><i class="fas fa-file-download"></i></a>
+                                            @endif
+                                            <a href="{{ route('contracts.show', $contract) }}" class="btn btn-sm btn-info" title="Voir"><i class="fas fa-eye"></i></a>
+                                            @can('update', $contract)
+                                            <a href="{{ route('contracts.edit', $contract) }}" class="btn btn-sm btn-primary" title="Modifier"><i class="fas fa-edit"></i></a>
+                                            @endcan
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="alert alert-info mb-0">Aucun contrat enregistré pour cet ambassadeur.</div>
+                        @endif
+                    </div>
+
+                    {{-- Documents légaux (admins et l'ambassadeur lui-même) --}}
+                    @if($canSeeDocuments)
+                    <div class="tab-pane" id="documents">
+                        @if($legalDocuments->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Fichier</th>
+                                        <th>Validité</th>
+                                        <th>Ajouté le</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($legalDocuments as $document)
+                                    <tr>
+                                        <td>{{ $document->type_label }}</td>
+                                        <td>{{ $document->label ?? '—' }}</td>
+                                        <td><a href="{{ route('legal-documents.download', $document) }}"><i class="fas fa-file-download mr-1"></i>{{ $document->original_name }}</a></td>
+                                        <td>
+                                            @if($document->expires_at)
+                                                {{ $document->expires_at->format('d/m/Y') }}
+                                                @if($document->is_expired)<span class="badge badge-danger">Expiré</span>@endif
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
+                                        <td>{{ $document->created_at->format('d/m/Y') }}{{ $document->uploader ? ' par ' . $document->uploader->name : '' }}</td>
+                                        <td class="text-right">
+                                            @can('delete', $document)
+                                            <form action="{{ route('legal-documents.destroy', $document) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer définitivement ce document ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                            @endcan
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="alert alert-info">Aucun document légal enregistré.</div>
+                        @endif
+
+                        @can('create', \App\Models\LegalDocument::class)
+                        <hr>
+                        <h6><i class="fas fa-upload mr-1"></i> Ajouter un document</h6>
+                        <form method="POST" action="{{ route('influencers.legal-documents.store', $influencer) }}" enctype="multipart/form-data">
+                            @csrf
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label for="doc_type" class="small">Type</label>
+                                    <select name="type" id="doc_type" class="form-control form-control-sm" required>
+                                        @foreach(config('influboss.legal_document_types') as $key => $label)
+                                            <option value="{{ $key }}" {{ old('type') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="doc_label" class="small">Description</label>
+                                    <input type="text" name="label" id="doc_label" class="form-control form-control-sm" placeholder="Ex. CNI recto-verso" value="{{ old('label') }}">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="doc_expires_at" class="small">Valide jusqu'au</label>
+                                    <input type="date" name="expires_at" id="doc_expires_at" class="form-control form-control-sm" value="{{ old('expires_at') }}">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="doc_file" class="small">Fichier (PDF, JPG, PNG, 10 Mo max)</label>
+                                    <input type="file" name="file" id="doc_file" class="form-control-file form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save mr-1"></i> Enregistrer le document</button>
+                            <small class="text-muted ml-2">Documents confidentiels : visibles uniquement par les administrateurs et l'ambassadeur.</small>
+                        </form>
+                        @endcan
+                    </div>
+                    @endif
 
                     {{-- Publications --}}
                     <div class="tab-pane" id="publications">
@@ -480,6 +629,14 @@ Ambassadeur : {{ $influencer->name }}
 @endsection
 
 @push('scripts')
+<script>
+    // Ouvre l'onglet désigné par l'ancre de l'URL (ex. #documents après l'ajout d'un document).
+    $(function () {
+        if (window.location.hash) {
+            $('.nav-pills a[href="' + window.location.hash + '"]').tab('show');
+        }
+    });
+</script>
 @if(count($followerChart['datasets']) > 0)
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 <script>

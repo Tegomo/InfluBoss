@@ -36,25 +36,36 @@
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
             <!-- Notifications Dropdown Menu -->
+            @php
+                $unreadCount = Auth::user()->unreadNotifications()->count();
+                $latestUnread = $unreadCount > 0 ? Auth::user()->unreadNotifications()->latest()->take(5)->get() : collect();
+            @endphp
             <li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
+                <a class="nav-link" data-toggle="dropdown" href="#" title="Notifications">
                     <i class="far fa-bell"></i>
-                    <span class="badge badge-warning navbar-badge">3</span>
+                    @if($unreadCount > 0)
+                    <span class="badge badge-warning navbar-badge">{{ $unreadCount }}</span>
+                    @endif
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <span class="dropdown-item dropdown-header">3 Notifications</span>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-envelope mr-2"></i> 1 nouveau message
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-users mr-2"></i> 1 nouvelle demande
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-file mr-2"></i> 1 nouveau rapport
-                    </a>
+                    <span class="dropdown-item dropdown-header">
+                        {{ $unreadCount > 0 ? $unreadCount . ' notification(s) non lue(s)' : 'Aucune nouvelle notification' }}
+                    </span>
+                    @foreach($latestUnread as $notification)
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ route('notifications.read', $notification->id) }}" class="dropdown-item" style="white-space: normal;">
+                            <i class="{{ $notification->data['icon'] ?? 'fas fa-bell' }} mr-2"></i>
+                            {{ $notification->data['message'] ?? 'Notification' }}
+                            <span class="float-right text-muted text-sm">{{ $notification->created_at->diffForHumans(null, true) }}</span>
+                        </a>
+                    @endforeach
+                    @if($unreadCount > 0)
+                        <div class="dropdown-divider"></div>
+                        <form method="POST" action="{{ route('notifications.read-all') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="dropdown-item dropdown-footer">Tout marquer comme lu</button>
+                        </form>
+                    @endif
                 </div>
             </li>
             <li class="nav-item">
@@ -133,6 +144,15 @@
                     </li>
                     @endif
                     
+                    @can('viewAny', \App\Models\Contract::class)
+                    <li class="nav-item">
+                        <a href="{{ route('contracts.index') }}" class="nav-link {{ request()->routeIs('contracts.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-signature"></i>
+                            <p>{{ Auth::user()->role === 'influencer' ? 'Mes contrats' : 'Contrats' }}</p>
+                        </a>
+                    </li>
+                    @endcan
+
                     @can('viewAny', \App\Models\Campaign::class)
                     <li class="nav-item">
                         <a href="{{ route('campaigns.index') }}" class="nav-link {{ request()->routeIs('campaigns.*') ? 'active' : '' }}">
