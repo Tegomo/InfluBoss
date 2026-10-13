@@ -54,18 +54,24 @@
                                             <div class="timeline-body">
                                                 {{ $note->content }}
                                             </div>
+                                            @canany(['update', 'delete'], $note)
                                             <div class="timeline-footer">
+                                                @can('update', $note)
+                                                <a href="{{ route('notes.edit', $note) }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-pencil-alt"></i> Modifier
+                                                </a>
+                                                @endcan
+                                                @can('delete', $note)
                                                 <form action="{{ route('notes.destroy', $note) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <a href="{{ route('notes.edit', $note) }}" class="btn btn-primary btn-sm">
-                                                        <i class="fas fa-pencil-alt"></i> Modifier
-                                                    </a>
                                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette note ?')">
                                                         <i class="fas fa-trash"></i> Supprimer
                                                     </button>
                                                 </form>
+                                                @endcan
                                             </div>
+                                            @endcanany
                                         </div>
                                     </div>
                                 @endforeach
