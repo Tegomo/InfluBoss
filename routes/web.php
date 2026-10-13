@@ -66,6 +66,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('influencers', InfluencerController::class);
     Route::post('/influencers/{influencer}/followers', [InfluencerController::class, 'updateFollowers'])
         ->name('influencers.update-followers');
+
+    // Contrats (droits gérés par ContractPolicy)
+    Route::get('/contracts/{contract}/download', [\App\Http\Controllers\ContractController::class, 'download'])
+        ->name('contracts.download');
+    Route::resource('contracts', \App\Http\Controllers\ContractController::class);
         
     // Routes pour l'import/export des influenceurs
     Route::get('/influencers-import-export', [\App\Http\Controllers\InfluencerImportExportController::class, 'index'])
