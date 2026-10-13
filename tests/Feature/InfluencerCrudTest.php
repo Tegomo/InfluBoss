@@ -165,6 +165,15 @@ class InfluencerCrudTest extends TestCase
         $this->assertSame(['sport'], $fresh->categories);
     }
 
+    public function test_removed_assignment_and_dashboard_routes_return_404(): void
+    {
+        $influencer = User::factory()->influencer()->create();
+
+        $this->actingAs($this->admin)->get("/influencers/{$influencer->id}/assign-campaigns")->assertNotFound();
+        $this->actingAs($this->admin)->post("/influencers/{$influencer->id}/store-assignment")->assertNotFound();
+        $this->actingAs($this->admin)->get("/influencers/{$influencer->id}/dashboard")->assertNotFound();
+    }
+
     public function test_supervisor_cannot_access_create_form(): void
     {
         $supervisor = User::factory()->supervisor()->create();

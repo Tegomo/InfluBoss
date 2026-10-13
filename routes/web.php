@@ -66,12 +66,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('influencers', InfluencerController::class);
     Route::post('/influencers/{influencer}/followers', [InfluencerController::class, 'updateFollowers'])
         ->name('influencers.update-followers');
-    Route::get('/influencers/{influencer}/assign-campaigns', [InfluencerController::class, 'assignCampaigns'])
-        ->name('influencers.assign-campaigns');
-    Route::post('/influencers/{influencer}/store-assignment', [InfluencerController::class, 'storeAssignment'])
-        ->name('influencers.store-assignment');
-    Route::get('/influencers/{influencer}/dashboard', [InfluencerController::class, 'dashboard'])
-        ->name('influencers.dashboard');
         
     // Routes pour l'import/export des influenceurs
     Route::get('/influencers-import-export', [\App\Http\Controllers\InfluencerImportExportController::class, 'index'])

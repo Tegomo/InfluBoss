@@ -188,7 +188,7 @@ class AssignmentController extends Controller
     {
         $assignment->load([
             'campaign',
-            'influencer',
+            'influencer.socialAccounts',
             'supervisor',
             'publications' => function($q) {
                 $q->with(['latestStats']);

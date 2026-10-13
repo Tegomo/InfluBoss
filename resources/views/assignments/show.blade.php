@@ -24,31 +24,45 @@
     <!-- Vue d'ensemble de la mission -->
     <div class="row">
         <div class="col-md-4">
+            @php
+                $influencer = $assignment->influencer;
+                $rates = $assignment->publications
+                    ->where('status', 'verified')
+                    ->map(fn ($publication) => $publication->latestStats?->engagement_rate)
+                    ->filter(fn ($rate) => $rate !== null && $rate > 0);
+                $avgEngagementRate = $rates->isEmpty() ? null : round($rates->avg(), 2);
+            @endphp
             <div class="card card-widget widget-user">
                 <div class="widget-user-header bg-orange">
-                    <h3 class="widget-user-username">{{ $assignment->influencer->name ?? 'Influenceur non défini' }}</h3>
-                    <h5 class="widget-user-desc">{{ $assignment->influencer->profile->specialty ?? 'Spécialité non définie' }}</h5>
+                    <h3 class="widget-user-username">{{ $influencer->name ?? 'Influenceur non défini' }}</h3>
+                    <h5 class="widget-user-desc">{{ $influencer && $influencer->category_labels !== [] ? implode(', ', $influencer->category_labels) : 'Catégorie non définie' }}</h5>
                 </div>
                 <div class="widget-user-image">
-                    <img class="img-circle elevation-2" src="{{ $assignment->influencer->profile->avatar_url ?? asset('img/default-avatar.png') }}" alt="Photo de l'influenceur">
+                    @if($influencer?->profile_photo)
+                        <img class="img-circle elevation-2" src="{{ asset('storage/' . $influencer->profile_photo) }}" alt="Photo de l'influenceur">
+                    @else
+                        <div class="img-circle elevation-2 bg-light d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                            <i class="fas fa-user fa-2x text-secondary"></i>
+                        </div>
+                    @endif
                 </div>
                 <div class="card-footer">
                     <div class="row">
                         <div class="col-sm-4 border-right">
                             <div class="description-block">
-                                <h5 class="description-header">{{ $assignment->influencer->profile->followers_count ?? 0 }}</h5>
+                                <h5 class="description-header">{{ number_format($influencer?->total_followers ?? 0) }}</h5>
                                 <span class="description-text">ABONNÉS</span>
                             </div>
                         </div>
                         <div class="col-sm-4 border-right">
                             <div class="description-block">
-                                <h5 class="description-header">{{ $assignment->publications->count() ?? 0 }}</h5>
+                                <h5 class="description-header">{{ $assignment->publications->count() }}</h5>
                                 <span class="description-text">PUBLICATIONS</span>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="description-block">
-                                <h5 class="description-header">{{ $assignment->influencer->profile->engagement_rate ?? '0%' }}</h5>
+                                <h5 class="description-header">{{ $avgEngagementRate !== null ? number_format($avgEngagementRate, 2) . ' %' : '—' }}</h5>
                                 <span class="description-text">ENGAGEMENT</span>
                             </div>
                         </div>
@@ -64,25 +78,29 @@
                     <table class="table">
                         <tr>
                             <td><i class="fas fa-envelope"></i></td>
-                            <td>Email:</td>
-                            <td>{{ $assignment->influencer->email ?? 'N/A' }}</td>
+                            <td>Email :</td>
+                            <td>{{ $influencer->email ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <td><i class="fas fa-phone"></i></td>
-                            <td>Téléphone:</td>
-                            <td>{{ $assignment->influencer->profile->phone ?? 'N/A' }}</td>
+                            <td>Téléphone :</td>
+                            <td>{{ $influencer->phone ?? 'N/A' }}</td>
                         </tr>
                         <tr>
-                            <td><i class="fab fa-instagram"></i></td>
-                            <td>Instagram:</td>
+                            <td><i class="fas fa-share-alt"></i></td>
+                            <td>Réseaux :</td>
                             <td>
-                                @if($assignment->influencer->profile->instagram_handle ?? null)
-                                    <a href="https://instagram.com/{{ $assignment->influencer->profile->instagram_handle }}" target="_blank">
-                                        {{ '@' . $assignment->influencer->profile->instagram_handle }}
-                                    </a>
-                                @else
-                                    N/A
-                                @endif
+                                @forelse($influencer?->socialAccounts ?? [] as $account)
+                                    <div>
+                                        <i class="{{ $account->config['icon'] }}" style="color: {{ $account->config['color'] }}"></i>
+                                        <a href="{{ $account->url }}" target="_blank" rel="noopener">{{ $account->handle ? '@' . $account->handle : $account->label }}</a>
+                                        @if($account->followers_count !== null)
+                                            <small class="text-muted">({{ number_format($account->followers_count) }} abonnés)</small>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <span class="text-muted">Aucun réseau social</span>
+                                @endforelse
                             </td>
                         </tr>
                     </table>

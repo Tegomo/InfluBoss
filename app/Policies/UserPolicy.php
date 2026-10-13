@@ -118,24 +118,4 @@ class UserPolicy
         return $user->role === 'supervisor'
             && $user->influencers()->whereKey($influencer->id)->exists();
     }
-
-    /**
-     * Détermine si l'utilisateur peut assigner des campagnes à un influenceur.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function assignCampaigns(User $user, User $influencer)
-    {
-        // Vérifier que c'est bien un influenceur
-        if ($influencer->role !== 'influencer') {
-            return false;
-        }
-
-        // Les admin et super admin peuvent assigner des campagnes
-        if (in_array($user->role, ['admin', 'super_admin'])) {
-            return true;
-        }
-
-        return false;
-    }
 }
