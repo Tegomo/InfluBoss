@@ -105,6 +105,14 @@ return [
     'upload_mimes' => 'pdf,jpg,jpeg,png',
     'upload_max_kb' => 10240,
 
+    // Comptes créés à l'initialisation de la base (InitialAccountsSeeder). Adresses modifiables par variables d'environnement.
+    'initial_accounts' => [
+        ['role' => 'super_admin', 'name' => 'Administrateur McCANN', 'email' => env('INFLUBOSS_ADMIN_EMAIL', 'admin@influboss.cm')],
+        ['role' => 'client', 'name' => 'Orange Cameroun', 'email' => env('INFLUBOSS_CLIENT_EMAIL', 'orange@influboss.cm')],
+        ['role' => 'supervisor', 'name' => 'Superviseur 1', 'email' => env('INFLUBOSS_SUPERVISOR1_EMAIL', 'superviseur1@influboss.cm')],
+        ['role' => 'supervisor', 'name' => 'Superviseur 2', 'email' => env('INFLUBOSS_SUPERVISOR2_EMAIL', 'superviseur2@influboss.cm')],
+    ],
+
     // Clés historiques (users.social_links, import CSV) vers les clés actuelles.
     'legacy_platform_keys' => [
         'twitter' => 'x',
