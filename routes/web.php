@@ -64,6 +64,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Routes pour les influenceurs
     Route::resource('influencers', InfluencerController::class);
+    Route::post('/influencers/{influencer}/followers', [InfluencerController::class, 'updateFollowers'])
+        ->name('influencers.update-followers');
     Route::get('/influencers/{influencer}/assign-campaigns', [InfluencerController::class, 'assignCampaigns'])
         ->name('influencers.assign-campaigns');
     Route::post('/influencers/{influencer}/store-assignment', [InfluencerController::class, 'storeAssignment'])

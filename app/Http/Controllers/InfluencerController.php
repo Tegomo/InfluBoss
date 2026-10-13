@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignment;
 use App\Models\Campaign;
+use App\Models\FollowerSnapshot;
 use App\Models\User;
 use App\Services\SocialAccountService;
 use Illuminate\Http\Request;
@@ -221,6 +222,52 @@ class InfluencerController extends Controller
 
         return redirect()->route('influencers.show', $influencer)
             ->with('success', 'Influenceur mis à jour avec succès.');
+    }
+
+    /**
+     * Enregistre un nouveau relevé d'abonnés pour les plateformes saisies (formulaire de la fiche).
+     */
+    public function updateFollowers(Request $request, User $influencer)
+    {
+        if ($influencer->role !== 'influencer') {
+            abort(404);
+        }
+
+        Gate::authorize('updateFollowers', $influencer);
+
+        $platforms = config('influboss.platforms');
+        $validated = $request->validate([
+            'followers' => ['required', 'array:'.implode(',', array_keys($platforms))],
+            'followers.*' => 'nullable|integer|min:0',
+        ], [
+            'followers.required' => 'Saisissez au moins un nombre d\'abonnés.',
+            'followers.array' => 'Plateforme inconnue.',
+            'followers.*.integer' => 'Le nombre d\'abonnés doit être un nombre entier.',
+            'followers.*.min' => 'Le nombre d\'abonnés ne peut pas être négatif.',
+        ]);
+
+        $counts = array_filter($validated['followers'], fn ($value) => $value !== null && $value !== '');
+        if ($counts === []) {
+            return back()->withErrors(['followers' => 'Saisissez au moins un nombre d\'abonnés.'])->withInput();
+        }
+
+        $accounts = $influencer->socialAccounts->keyBy('platform');
+        foreach (array_keys($counts) as $platform) {
+            if (! isset($accounts[$platform])) {
+                $label = $platforms[$platform]['label'];
+
+                return back()
+                    ->withErrors(['followers' => "Aucun compte {$label} enregistré pour cet influenceur."])
+                    ->withInput();
+            }
+        }
+
+        foreach ($counts as $platform => $count) {
+            $accounts[$platform]->recordFollowers((int) $count, FollowerSnapshot::SOURCE_MANUAL, Auth::id());
+        }
+
+        return redirect()->route('influencers.show', $influencer)
+            ->with('success', 'Abonnés mis à jour.');
     }
 
     /**

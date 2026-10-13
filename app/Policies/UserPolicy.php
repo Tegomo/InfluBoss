@@ -28,7 +28,6 @@ class UserPolicy
     /**
      * Détermine si l'utilisateur peut créer un nouveau utilisateur
      *
-     * @param  \App\Models\User  $user
      * @param  string|null  $role
      * @return \Illuminate\Auth\Access\Response|bool
      */
@@ -38,25 +37,23 @@ class UserPolicy
         if ($role === null) {
             return in_array($user->role, ['super_admin', 'admin']);
         }
-        
+
         // Seuls les super admin peuvent créer des admin
         if ($role === 'admin' && $user->role === 'super_admin') {
             return true;
         }
-        
+
         // Les admin et super admin peuvent créer des superviseurs et des influenceurs
         if (in_array($role, ['supervisor', 'influencer']) && in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
-        
+
         return false;
     }
 
     /**
      * Détermine si l'utilisateur peut mettre à jour le profil d'un autre utilisateur.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, User $model)
@@ -65,25 +62,23 @@ class UserPolicy
         if ($user->id === $model->id) {
             return true;
         }
-        
+
         // Les super admin peuvent tout mettre à jour
         if ($user->role === 'super_admin') {
             return true;
         }
-        
+
         // Les admin peuvent mettre à jour tous les profils sauf les super admin
         if ($user->role === 'admin' && $model->role !== 'super_admin') {
             return true;
         }
-        
+
         return false;
     }
 
     /**
      * Détermine si l'utilisateur peut supprimer un autre utilisateur.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, User $model)
@@ -92,25 +87,41 @@ class UserPolicy
         if ($user->id === $model->id) {
             return false;
         }
-        
+
         // Les super admin peuvent tout supprimer
         if ($user->role === 'super_admin') {
             return true;
         }
-        
+
         // Les admin peuvent supprimer les superviseurs et les influenceurs
         if ($user->role === 'admin' && in_array($model->role, ['supervisor', 'influencer'])) {
             return true;
         }
-        
+
         return false;
     }
-    
+
+    /**
+     * Détermine si l'utilisateur peut saisir le nombre d'abonnés d'un influenceur :
+     * les admins, et les superviseurs liés à cet influenceur (pivot supervisor_influencer).
+     */
+    public function updateFollowers(User $user, User $influencer): bool
+    {
+        if ($influencer->role !== 'influencer') {
+            return false;
+        }
+
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            return true;
+        }
+
+        return $user->role === 'supervisor'
+            && $user->influencers()->whereKey($influencer->id)->exists();
+    }
+
     /**
      * Détermine si l'utilisateur peut assigner des campagnes à un influenceur.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $influencer
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function assignCampaigns(User $user, User $influencer)
@@ -119,12 +130,12 @@ class UserPolicy
         if ($influencer->role !== 'influencer') {
             return false;
         }
-        
+
         // Les admin et super admin peuvent assigner des campagnes
         if (in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
-        
+
         return false;
     }
 }
