@@ -149,10 +149,13 @@
                                         <a href="{{ route('assignments.show', $assignment) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @can('update', $assignment)
                                         <a href="{{ route('assignments.edit', $assignment) }}" class="btn btn-sm btn-warning">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('assignments.destroy', $assignment) }}" method="POST" 
+                                        @endcan
+                                        @can('delete', $assignment)
+                                        <form action="{{ route('assignments.destroy', $assignment) }}" method="POST"
                                             onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette mission ?');"
                                             style="display: inline-block;">
                                             @csrf
@@ -161,6 +164,7 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

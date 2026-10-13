@@ -12,6 +12,7 @@ use App\Models\Publication;
 use App\Models\Note;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AssignmentController extends Controller
 {
@@ -186,6 +187,8 @@ class AssignmentController extends Controller
      */
     public function show(Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         $assignment->load([
             'campaign',
             'influencer.socialAccounts',
@@ -303,6 +306,8 @@ class AssignmentController extends Controller
      */
     public function destroy(Assignment $assignment)
     {
+        Gate::authorize('delete', $assignment);
+
         $assignment->delete();
         return redirect()->route('assignments.index')
             ->with('success', 'Mission supprimée avec succès.');
@@ -313,6 +318,8 @@ class AssignmentController extends Controller
      */
     public function dashboard(Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         $assignment->load([
             'campaign',
             'influencer',

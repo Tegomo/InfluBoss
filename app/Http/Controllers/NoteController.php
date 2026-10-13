@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class NoteController extends Controller
@@ -17,6 +18,8 @@ class NoteController extends Controller
      */
     public function index(Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         $notes = $assignment->notes()
             ->with('user')
             ->orderBy('created_at', 'desc')
@@ -33,6 +36,8 @@ class NoteController extends Controller
      */
     public function create(Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         return view('notes.create', [
             'assignment' => $assignment
         ]);
@@ -43,6 +48,8 @@ class NoteController extends Controller
      */
     public function store(Request $request, Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
         ]);
@@ -63,6 +70,8 @@ class NoteController extends Controller
      */
     public function apiStore(Request $request, Assignment $assignment)
     {
+        Gate::authorize('view', $assignment);
+
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
         ]);
