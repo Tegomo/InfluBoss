@@ -75,6 +75,42 @@
                 <a href="{{ route('contracts.index') }}" class="btn btn-default">Retour à la liste</a>
             </div>
         </div>
+
+        @if($canSeePayments)
+        <div class="card card-outline card-success" id="payments">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-money-bill-wave mr-1"></i> Paiements du contrat</h3>
+                <div class="card-tools">
+                    @can('create', \App\Models\Payment::class)
+                    <a href="{{ route('payments.create', ['contract' => $contract->id]) }}" class="btn btn-sm btn-success"><i class="fas fa-plus mr-1"></i> Ajouter un paiement</a>
+                    @endcan
+                </div>
+            </div>
+            <div class="card-body pb-0">
+                <div class="row text-center">
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="text-muted small">Montant du contrat</div>
+                        <div class="font-weight-bold">{{ $paymentSummary['contract_amount'] !== null ? number_format($paymentSummary['contract_amount'], 0, ',', ' ') . ' FCFA' : '—' }}</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="text-muted small">Payé</div>
+                        <div class="font-weight-bold text-success">{{ number_format($paymentSummary['paid'], 0, ',', ' ') }} FCFA</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="text-muted small">En attente</div>
+                        <div class="font-weight-bold text-warning">{{ number_format($paymentSummary['pending'], 0, ',', ' ') }} FCFA</div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="text-muted small">Reste à planifier</div>
+                        <div class="font-weight-bold">{{ $paymentSummary['remaining_to_schedule'] !== null ? number_format($paymentSummary['remaining_to_schedule'], 0, ',', ' ') . ' FCFA' : '—' }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @include('payments.partials.table', ['payments' => $payments, 'showInfluencer' => false])
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="col-md-4">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\FollowerSnapshot;
 use App\Models\LegalDocument;
+use App\Models\Payment;
 use App\Models\SocialAccount;
 use App\Models\User;
 use App\Services\InfluencerStatsService;
@@ -167,6 +168,11 @@ class InfluencerController extends Controller
         $canSeeDocuments = Gate::allows('viewAny', [LegalDocument::class, $influencer]);
         $legalDocuments = $canSeeDocuments ? $influencer->legalDocuments()->with('uploader')->get() : collect();
 
+        // Paiements : admins et l'influenceur lui-même (UserPolicy::view n'ouvre sa fiche qu'à lui).
+        $canSeePayments = Gate::allows('viewAny', Payment::class);
+        $payments = $canSeePayments ? $influencer->payments()->with('contract')->get() : collect();
+        $paymentTotals = $canSeePayments ? Payment::totalsFor($influencer->payments()->getQuery()) : null;
+
         return view('influencers.show', compact(
             'influencer',
             'assignments',
@@ -178,7 +184,10 @@ class InfluencerController extends Controller
             'contracts',
             'currentContract',
             'canSeeDocuments',
-            'legalDocuments'
+            'legalDocuments',
+            'canSeePayments',
+            'payments',
+            'paymentTotals'
         ));
     }
 

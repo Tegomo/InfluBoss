@@ -193,6 +193,9 @@ Ambassadeur : {{ $influencer->name }}
                     @if($canSeeDocuments)
                     <li class="nav-item"><a class="nav-link" href="#documents" data-toggle="tab">Documents <span class="badge badge-light">{{ $legalDocuments->count() }}</span></a></li>
                     @endif
+                    @if($canSeePayments)
+                    <li class="nav-item"><a class="nav-link" href="#payments" data-toggle="tab">Paiements <span class="badge badge-light">{{ $payments->count() }}</span></a></li>
+                    @endif
                     <li class="nav-item"><a class="nav-link" href="#publications" data-toggle="tab">Publications</a></li>
                     <li class="nav-item"><a class="nav-link" href="#stats" data-toggle="tab">Statistiques</a></li>
                 </ul>
@@ -413,6 +416,19 @@ Ambassadeur : {{ $influencer->name }}
                             <small class="text-muted ml-2">Documents confidentiels : visibles uniquement par les administrateurs et l'ambassadeur.</small>
                         </form>
                         @endcan
+                    </div>
+                    @endif
+
+                    {{-- Paiements (admins et l'ambassadeur lui-même) --}}
+                    @if($canSeePayments)
+                    <div class="tab-pane" id="payments">
+                        @can('create', \App\Models\Payment::class)
+                        <div class="text-right mb-2">
+                            <a href="{{ route('payments.create', ['influencer' => $influencer->id]) }}" class="btn btn-sm btn-success"><i class="fas fa-plus mr-1"></i> Ajouter un paiement</a>
+                        </div>
+                        @endcan
+                        @include('payments.partials.totals', ['totals' => $paymentTotals])
+                        @include('payments.partials.table', ['payments' => $payments, 'showInfluencer' => false])
                     </div>
                     @endif
 

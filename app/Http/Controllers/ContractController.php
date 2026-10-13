@@ -86,7 +86,12 @@ class ContractController extends Controller
 
         $contract->load(['influencer', 'creator', 'alerts']);
 
-        return view('contracts.show', compact('contract'));
+        // Échéancier : réservé aux admins et à l'influenceur du contrat (pas aux superviseurs).
+        $canSeePayments = Gate::allows('viewAny', \App\Models\Payment::class);
+        $payments = $canSeePayments ? $contract->payments()->get() : collect();
+        $paymentSummary = $canSeePayments ? $contract->paymentSummary() : null;
+
+        return view('contracts.show', compact('contract', 'canSeePayments', 'payments', 'paymentSummary'));
     }
 
     public function edit(Contract $contract)
