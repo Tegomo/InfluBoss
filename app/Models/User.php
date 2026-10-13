@@ -25,12 +25,13 @@ class User extends Authenticatable
         'birthdate',
         'email',
         'phone',
+        'address',
         'city',
         'password',
         'role',
-        'social_links',
         'profile_photo',
         'bio',
+        'categories',
         'is_active',
     ];
 
@@ -55,9 +56,49 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'birthdate' => 'date',
             'password' => 'hashed',
-            'social_links' => 'json',
+            'social_links' => 'json', // legacy, lecture seule : les liens vivent dans social_accounts
+            'categories' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Comptes sociaux de l'influenceur (un par plateforme).
+     */
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class)->orderBy('platform');
+    }
+
+    /**
+     * Historique des abonnés, toutes plateformes confondues.
+     */
+    public function followerSnapshots()
+    {
+        return $this->hasManyThrough(FollowerSnapshot::class, SocialAccount::class);
+    }
+
+    /**
+     * Somme des derniers nombres d'abonnés connus sur toutes les plateformes.
+     */
+    public function getTotalFollowersAttribute(): int
+    {
+        return (int) $this->socialAccounts->sum('followers_count');
+    }
+
+    /**
+     * Libellés des catégories (niches) de l'influenceur, clés inconnues ignorées.
+     *
+     * @return array<int, string>
+     */
+    public function getCategoryLabelsAttribute(): array
+    {
+        $labels = config('influboss.categories', []);
+
+        return array_values(array_filter(array_map(
+            fn ($key) => $labels[$key] ?? null,
+            $this->categories ?? []
+        )));
     }
     
     /**
