@@ -168,6 +168,13 @@
         </div>
     </div>
 
+    <!-- Charte de marque -->
+    <div class="row">
+        <div class="col-md-12">
+            @include('campaigns.partials.brand-charter', ['campaign' => $campaign])
+        </div>
+    </div>
+
     <!-- Contenus associés -->
     <div class="row">
         <div class="col-md-12">

@@ -89,8 +89,10 @@ class CampaignController extends Controller
             'target_audience' => 'nullable|string|max:255',
             'objectives' => 'nullable|array',
             'platforms' => 'required|array|min:1',
-            'platforms.*' => 'string|in:facebook,instagram,twitter,tiktok,youtube,linkedin'
-        ]);
+            'platforms.*' => 'string|in:facebook,instagram,twitter,tiktok,youtube,linkedin',
+        ] + $this->brandCharterRules());
+
+        $validated = $this->normalizeBrandCharter($validated);
         
         // Ajouter l'ID du créateur
         $validated['created_by'] = Auth::id();
@@ -163,8 +165,10 @@ class CampaignController extends Controller
             'target_audience' => 'nullable|string|max:255',
             'objectives' => 'nullable|array',
             'platforms' => 'required|array|min:1',
-            'platforms.*' => 'string|in:facebook,instagram,twitter,tiktok,youtube,linkedin'
-        ]);
+            'platforms.*' => 'string|in:facebook,instagram,twitter,tiktok,youtube,linkedin',
+        ] + $this->brandCharterRules());
+
+        $validated = $this->normalizeBrandCharter($validated);
         
         // Convertir les objectifs en JSON
         if (isset($validated['objectives'])) {
@@ -281,5 +285,30 @@ class CampaignController extends Controller
             'platformStats',
             'topInfluencers'
         ));
+    }
+
+    /**
+     * Règles de la charte de marque (ton, visuels, hashtags, mentions, produits).
+     */
+    private function brandCharterRules(): array
+    {
+        return [
+            'products' => 'nullable|string|max:2000',
+            'brand_tone' => 'nullable|string|max:2000',
+            'visual_guidelines' => 'nullable|string|max:2000',
+            'required_hashtags' => 'nullable|string|max:1000',
+            'required_mentions' => 'nullable|string|max:1000',
+        ];
+    }
+
+    /**
+     * Transforme les hashtags et mentions saisis en listes normalisées (#… et @…).
+     */
+    private function normalizeBrandCharter(array $validated): array
+    {
+        $validated['required_hashtags'] = Campaign::parseTags($validated['required_hashtags'] ?? null, '#');
+        $validated['required_mentions'] = Campaign::parseTags($validated['required_mentions'] ?? null, '@');
+
+        return $validated;
     }
 }

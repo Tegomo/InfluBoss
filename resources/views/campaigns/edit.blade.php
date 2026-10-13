@@ -230,6 +230,8 @@
                         </div>
                     </div>
                     
+                    @include('campaigns.partials.brand-charter-fields', ['campaign' => $campaign])
+
                     <div class="card-footer">
                         <button type="submit" class="btn btn-warning">Mettre à jour</button>
                         <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-secondary">Annuler</a>

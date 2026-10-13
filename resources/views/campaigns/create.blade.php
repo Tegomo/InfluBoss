@@ -189,6 +189,8 @@
                         </div>
                     </div>
                     
+                    @include('campaigns.partials.brand-charter-fields')
+
                     <div class="card-footer">
                         <button type="submit" class="btn btn-primary">Créer</button>
                         <a href="{{ route('campaigns.index') }}" class="btn btn-secondary">Annuler</a>
