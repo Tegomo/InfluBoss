@@ -11,7 +11,6 @@ use App\Services\InfluencerStatsService;
 use App\Services\SocialAccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -32,50 +31,46 @@ class InfluencerController extends Controller
         // Seuls les admin, super admin et superviseurs peuvent accéder à cette page
         Gate::authorize('viewAny', User::class);
 
-        $query = User::where('role', 'influencer');
+        $categories = config('influboss.categories');
+        $platforms = config('influboss.platforms');
+
+        $query = User::where('role', 'influencer')
+            ->with('socialAccounts')
+            ->withSum('socialAccounts as followers_total', 'followers_count');
 
         // Filtrer par état actif/inactif
         if ($request->filled('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        // Filtrer par plateforme sociale
-        if ($request->filled('platform')) {
-            $platform = $request->platform;
-            $query->whereJsonContains('social_links', [$platform]);
+        // Filtrer par plateforme sociale (clé connue uniquement)
+        if ($request->filled('platform') && array_key_exists($request->platform, $platforms)) {
+            $query->whereHas('socialAccounts', fn ($q) => $q->where('platform', $request->platform));
         }
 
-        // Recherche par nom ou email
+        // Filtrer par catégorie (clé connue uniquement)
+        if ($request->filled('category') && array_key_exists($request->category, $categories)) {
+            $query->whereJsonContains('categories', $request->category);
+        }
+
+        // Recherche par nom, pseudo ou email
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('pseudo', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        // Si c'est un superviseur, ne montrer que les influenceurs qu'il supervise
+        // Un superviseur ne voit que les influenceurs qui lui sont liés (pivot supervisor_influencer)
         if (Auth::user()->role === 'supervisor') {
-            // Récupérer les IDs des influenceurs assignés à ce superviseur depuis la table supervisor_influencer
-            $influencersIds = DB::table('supervisor_influencer')
-                ->where('supervisor_id', Auth::id())
-                ->pluck('influencer_id')
-                ->toArray();
-
-            // Si aucun influenceur n'est assigné, utiliser un ID impossible pour que la requête ne retourne rien
-            if (empty($influencersIds)) {
-                $query->where('id', 0); // Aucun utilisateur n'aura cet ID
-            } else {
-                $query->whereIn('id', $influencersIds);
-            }
+            $query->whereIn('id', Auth::user()->influencers()->pluck('users.id'));
         }
 
-        // Trier les influenceurs du plus récent au plus ancien
-        $query->orderBy('created_at', 'desc');
+        $influencers = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        $influencers = $query->paginate(10);
-
-        return view('influencers.index', compact('influencers'));
+        return view('influencers.index', compact('influencers', 'categories', 'platforms'));
     }
 
     /**
