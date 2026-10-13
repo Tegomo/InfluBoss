@@ -71,6 +71,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/contracts/{contract}/download', [\App\Http\Controllers\ContractController::class, 'download'])
         ->name('contracts.download');
     Route::resource('contracts', \App\Http\Controllers\ContractController::class);
+
+    // Documents légaux (droits gérés par LegalDocumentPolicy)
+    Route::post('/influencers/{influencer}/legal-documents', [\App\Http\Controllers\LegalDocumentController::class, 'store'])
+        ->name('influencers.legal-documents.store');
+    Route::get('/legal-documents/{legalDocument}/download', [\App\Http\Controllers\LegalDocumentController::class, 'download'])
+        ->name('legal-documents.download');
+    Route::delete('/legal-documents/{legalDocument}', [\App\Http\Controllers\LegalDocumentController::class, 'destroy'])
+        ->name('legal-documents.destroy');
         
     // Routes pour l'import/export des influenceurs
     Route::get('/influencers-import-export', [\App\Http\Controllers\InfluencerImportExportController::class, 'index'])
