@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -100,7 +99,7 @@ class User extends Authenticatable
             $this->categories ?? []
         )));
     }
-    
+
     /**
      * Determine if user is a super admin
      */
@@ -108,7 +107,7 @@ class User extends Authenticatable
     {
         return $this->role === 'super_admin';
     }
-    
+
     /**
      * Determine if user is an admin
      */
@@ -116,7 +115,7 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
-    
+
     /**
      * Determine if user is a supervisor
      */
@@ -124,7 +123,7 @@ class User extends Authenticatable
     {
         return $this->role === 'supervisor';
     }
-    
+
     /**
      * Determine if user is an influencer
      */
@@ -132,7 +131,7 @@ class User extends Authenticatable
     {
         return $this->role === 'influencer';
     }
-    
+
     /**
      * Get campaigns created by this user (admin)
      */
@@ -140,7 +139,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Campaign::class, 'created_by');
     }
-    
+
     /**
      * Get campaigns where this user is assigned as an influencer
      */
@@ -155,7 +154,7 @@ class User extends Authenticatable
             'campaign_id'
         );
     }
-    
+
     /**
      * Get campaigns where this user is assigned as a supervisor
      */
@@ -166,20 +165,18 @@ class User extends Authenticatable
             ->where('supervisor_id', $this->id)
             ->pluck('influencer_id')
             ->toArray();
-            
+
         if (empty($influencerIds)) {
             // Si aucun influenceur n'est assigné, retourner une collection vide
             return Campaign::whereRaw('1 = 0');
         }
-        
+
         // Récupérer les campagnes associées à ces influenceurs via la table assignments
-        return Campaign::whereHas('assignments', function($query) use ($influencerIds) {
+        return Campaign::whereHas('assignments', function ($query) use ($influencerIds) {
             $query->whereIn('influencer_id', $influencerIds);
         })->distinct();
     }
-    
 
-    
     /**
      * Get assignments where this user is an influencer
      */
@@ -187,7 +184,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Assignment::class, 'influencer_id');
     }
-    
+
     /**
      * Get assignments where this user is a supervisor
      */
@@ -195,7 +192,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Assignment::class, 'supervisor_id');
     }
-    
+
     /**
      * Alias method for backwards compatibility
      * Get influencers supervised by this user
@@ -211,7 +208,7 @@ class User extends Authenticatable
             'influencer_id'
         )->distinct();
     }
-    
+
     /**
      * Get publications created by this user
      */
@@ -221,7 +218,7 @@ class User extends Authenticatable
         // n'a pas de colonne user_id
         return $this->hasMany(Publication::class, 'influencer_id');
     }
-    
+
     /**
      * Get all assignments related to this user as influencer
      */
@@ -229,11 +226,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Assignment::class, 'influencer_id');
     }
-    
 
-    
-
-    
     /**
      * Get supervisors of this influencer
      */
@@ -241,7 +234,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'supervisor_influencer', 'influencer_id', 'supervisor_id');
     }
-    
+
     /**
      * Get influencers supervised by this user through the pivot table
      */
