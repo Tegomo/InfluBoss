@@ -38,7 +38,7 @@ Modifier l'influenceur : {{ $influencer->name }}
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label for="pseudo">Pseudo</label>
+                                <label for="pseudo">Pseudo / nom de la chaîne</label>
                                 <input type="text" class="form-control @error('pseudo') is-invalid @enderror" id="pseudo" name="pseudo" placeholder="Pseudo sur les réseaux sociaux" value="{{ old('pseudo', $influencer->pseudo) }}">
                                 @error('pseudo')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -52,6 +52,13 @@ Modifier l'influenceur : {{ $influencer->name }}
                                 @enderror
                             </div>
                             <div class="form-group">
+                                <label for="address">Adresse</label>
+                                <input type="text" class="form-control @error('address') is-invalid @enderror" id="address" name="address" placeholder="Quartier, rue…" value="{{ old('address', $influencer->address) }}">
+                                @error('address')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-group">
                                 <label for="city">Ville</label>
                                 <input type="text" class="form-control @error('city') is-invalid @enderror" id="city" name="city" placeholder="Ville" value="{{ old('city', $influencer->city) }}">
                                 @error('city')
@@ -59,28 +66,35 @@ Modifier l'influenceur : {{ $influencer->name }}
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label for="birthdate">Date de naissance</label>
-                                <input type="date" class="form-control @error('birthdate') is-invalid @enderror" id="birthdate" name="birthdate" value="{{ old('birthdate', $influencer->birthdate ? $influencer->birthdate->format('Y-m-d') : '') }}">
-                                @error('birthdate')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <label for="categories">Catégories / niches</label>
+                                <select name="categories[]" id="categories" multiple class="form-control select2 @error('categories') is-invalid @enderror" data-placeholder="Choisir une ou plusieurs catégories" style="width: 100%">
+                                    @foreach($categories as $key => $label)
+                                        <option value="{{ $key }}" {{ in_array($key, old('categories', $influencer->categories ?? [])) ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('categories')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                @error('categories.*')
+                                <div class="text-danger small">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="password">Mot de passe <small class="text-muted">(laisser vide pour ne pas changer)</small></label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Nouveau mot de passe">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Nouveau mot de passe" autocomplete="new-password">
                                 @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="form-group">
                                 <label for="password_confirmation">Confirmer le mot de passe</label>
-                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Confirmer le mot de passe">
+                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Confirmer le mot de passe" autocomplete="new-password">
                             </div>
 
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" value="1" {{ $influencer->is_active ? 'checked' : '' }}>
+                                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" value="1" {{ old('is_active', $influencer->is_active) ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="is_active">Compte actif</label>
                                 </div>
                                 <small class="form-text text-muted">Les comptes inactifs ne peuvent pas se connecter ni être assignés à de nouvelles campagnes.</small>
@@ -110,7 +124,7 @@ Modifier l'influenceur : {{ $influencer->name }}
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="bio">Bio / Présentation</label>
                         <textarea class="form-control @error('bio') is-invalid @enderror" id="bio" name="bio" rows="3" placeholder="Courte biographie ou présentation">{{ old('bio', $influencer->bio) }}</textarea>
@@ -118,45 +132,13 @@ Modifier l'influenceur : {{ $influencer->name }}
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
+
                     <hr>
-                    <h5><i class="fas fa-share-alt mr-2"></i>Réseaux sociaux</h5>
-                    
-                    @php 
-                        $socialLinks = is_string($influencer->social_links) ? json_decode($influencer->social_links, true) : $influencer->social_links; 
-                        $socialLinks = $socialLinks ?: [];
-                    @endphp
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="social_instagram"><i class="fab fa-instagram text-pink mr-1"></i> Instagram</label>
-                                <input type="url" class="form-control" id="social_instagram" name="social_instagram" placeholder="https://instagram.com/username" value="{{ old('social_instagram', $socialLinks['instagram'] ?? '') }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="social_tiktok"><i class="fab fa-tiktok mr-1"></i> TikTok</label>
-                                <input type="url" class="form-control" id="social_tiktok" name="social_tiktok" placeholder="https://tiktok.com/@username" value="{{ old('social_tiktok', $socialLinks['tiktok'] ?? '') }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="social_facebook"><i class="fab fa-facebook text-primary mr-1"></i> Facebook</label>
-                                <input type="url" class="form-control" id="social_facebook" name="social_facebook" placeholder="https://facebook.com/username" value="{{ old('social_facebook', $socialLinks['facebook'] ?? '') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="social_youtube"><i class="fab fa-youtube text-danger mr-1"></i> YouTube</label>
-                                <input type="url" class="form-control" id="social_youtube" name="social_youtube" placeholder="https://youtube.com/c/username" value="{{ old('social_youtube', $socialLinks['youtube'] ?? '') }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="social_twitter"><i class="fab fa-twitter text-info mr-1"></i> Twitter</label>
-                                <input type="url" class="form-control" id="social_twitter" name="social_twitter" placeholder="https://twitter.com/username" value="{{ old('social_twitter', $socialLinks['twitter'] ?? '') }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="social_linkedin"><i class="fab fa-linkedin text-primary mr-1"></i> LinkedIn</label>
-                                <input type="url" class="form-control" id="social_linkedin" name="social_linkedin" placeholder="https://linkedin.com/in/username" value="{{ old('social_linkedin', $socialLinks['linkedin'] ?? '') }}">
-                            </div>
-                        </div>
-                    </div>
+                    <h5><i class="fas fa-share-alt mr-2"></i>Réseaux sociaux et abonnés</h5>
+                    @error('social')
+                    <div class="alert alert-danger py-1">{{ $message }}</div>
+                    @enderror
+                    @include('influencers.partials.social-accounts-fields', ['platforms' => $platforms, 'accounts' => $accounts])
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
@@ -168,18 +150,19 @@ Modifier l'influenceur : {{ $influencer->name }}
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     $(function () {
-        // Preview de l'image avant upload
-        $('#profile_photo').on('change', function() {
-            let reader = new FileReader();
+        // Aperçu de la photo avant envoi
+        $('#profile_photo').on('change', function () {
+            if (!this.files[0]) return;
+            const reader = new FileReader();
             reader.onload = (e) => {
-                $('.img-preview').html('<img src="'+e.target.result+'" class="img-fluid img-circle" style="max-height: 200px;">');
-            }
+                $('.img-preview').html('<img src="' + e.target.result + '" class="img-fluid img-circle" style="max-height: 200px;">');
+            };
             reader.readAsDataURL(this.files[0]);
             $('.custom-file-label').text(this.files[0].name);
         });
     });
 </script>
-@endsection
+@endpush

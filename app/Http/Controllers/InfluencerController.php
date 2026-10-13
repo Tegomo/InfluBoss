@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Campaign;
 use App\Models\Assignment;
+use App\Models\Campaign;
+use App\Models\User;
+use App\Services\SocialAccountService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class InfluencerController extends Controller
 {
+    public function __construct(private SocialAccountService $socialAccounts) {}
+
     /**
      * Affiche la liste des influenceurs
      */
@@ -20,29 +25,29 @@ class InfluencerController extends Controller
     {
         // Seuls les admin, super admin et superviseurs peuvent accéder à cette page
         Gate::authorize('viewAny', User::class);
-        
+
         $query = User::where('role', 'influencer');
-        
+
         // Filtrer par état actif/inactif
         if ($request->filled('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
-        
+
         // Filtrer par plateforme sociale
         if ($request->filled('platform')) {
             $platform = $request->platform;
             $query->whereJsonContains('social_links', [$platform]);
         }
-        
+
         // Recherche par nom ou email
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
-        
+
         // Si c'est un superviseur, ne montrer que les influenceurs qu'il supervise
         if (Auth::user()->role === 'supervisor') {
             // Récupérer les IDs des influenceurs assignés à ce superviseur depuis la table supervisor_influencer
@@ -50,7 +55,7 @@ class InfluencerController extends Controller
                 ->where('supervisor_id', Auth::id())
                 ->pluck('influencer_id')
                 ->toArray();
-            
+
             // Si aucun influenceur n'est assigné, utiliser un ID impossible pour que la requête ne retourne rien
             if (empty($influencersIds)) {
                 $query->where('id', 0); // Aucun utilisateur n'aura cet ID
@@ -58,12 +63,12 @@ class InfluencerController extends Controller
                 $query->whereIn('id', $influencersIds);
             }
         }
-        
+
         // Trier les influenceurs du plus récent au plus ancien
         $query->orderBy('created_at', 'desc');
-        
+
         $influencers = $query->paginate(10);
-        
+
         return view('influencers.index', compact('influencers'));
     }
 
@@ -74,8 +79,8 @@ class InfluencerController extends Controller
     {
         // Seuls les admin et super admin peuvent créer des influenceurs
         Gate::authorize('create', User::class);
-        
-        return view('influencers.create');
+
+        return view('influencers.create', $this->formData());
     }
 
     /**
@@ -85,60 +90,23 @@ class InfluencerController extends Controller
     {
         // Seuls les admin et super admin peuvent créer des influenceurs
         Gate::authorize('create', User::class);
-        
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|string|min:8',
-            'bio' => 'nullable|string',
-            'social_links' => 'nullable|array',
-            'profile_photo' => 'nullable|image|max:2048',
-        ]);
-        
-        // Gérer les liens sociaux
-        $socialLinks = [];
-        if ($request->filled('social_facebook')) {
-            $socialLinks['facebook'] = $request->social_facebook;
-        }
-        if ($request->filled('social_instagram')) {
-            $socialLinks['instagram'] = $request->social_instagram;
-        }
-        if ($request->filled('social_twitter')) {
-            $socialLinks['twitter'] = $request->social_twitter;
-        }
-        if ($request->filled('social_tiktok')) {
-            $socialLinks['tiktok'] = $request->social_tiktok;
-        }
-        if ($request->filled('social_youtube')) {
-            $socialLinks['youtube'] = $request->social_youtube;
-        }
-        if ($request->filled('social_linkedin')) {
-            $socialLinks['linkedin'] = $request->social_linkedin;
-        }
-        
-        // Traiter la photo de profil si fournie
-        if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $validated['profile_photo'] = $path;
-        }
-        
-        // Créer l'influenceur
-        $influencer = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'pseudo' => $validated['pseudo'] ?? null,
-            'birthdate' => $validated['birthdate'] ?? null,
-            'city' => $validated['city'] ?? null,
+
+        $validated = $request->validate($this->rules(), $this->messages());
+
+        $attributes = $this->profileAttributes($validated) + [
             'password' => Hash::make($validated['password']),
             'role' => 'influencer',
-            'bio' => $validated['bio'] ?? null,
-            'social_links' => !empty($socialLinks) ? json_encode($socialLinks) : null,
-            'profile_photo' => $validated['profile_photo'] ?? null,
             'is_active' => true,
-        ]);
-        
+        ];
+
+        if ($request->hasFile('profile_photo')) {
+            $attributes['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
+        $influencer = User::create($attributes);
+
+        $this->socialAccounts->syncForUser($influencer, $validated['social'] ?? [], Auth::id());
+
         return redirect()->route('influencers.show', $influencer)
             ->with('success', 'Influenceur créé avec succès.');
     }
@@ -152,23 +120,23 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('view', $influencer);
-        
+
         // Charger les campagnes associées et les publications
         $influencer->load([
-            'influencerAssignments.campaign', 
+            'influencerAssignments.campaign',
             'publications.latestStats',
-            'influencerAssignments.supervisor'
+            'influencerAssignments.supervisor',
         ]);
-        
-        // Récupérer les missions (assignments) de l'influenceur
+
+        // Récupérer les missions (assignments) de l'influencer
         $assignments = $influencer->influencerAssignments;
-        
+
         // Récupérer les publications de l'influenceur
         $publications = $influencer->publications;
-        
+
         // Calculer les statistiques globales
         $totalPublications = $publications->count();
         // Calculer l'engagement total en additionnant les statistiques individuelles
@@ -176,7 +144,7 @@ class InfluencerController extends Controller
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
             ->select('stats.likes', 'stats.comments', 'stats.shares', 'stats.saves')
             ->get();
-            
+
         $totalEngagement = $stats->sum('likes') + $stats->sum('comments') + $stats->sum('shares') + $stats->sum('saves');
         $avgEngagementRate = $influencer->publications()
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
@@ -184,17 +152,16 @@ class InfluencerController extends Controller
         $totalReach = $influencer->publications()
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
             ->sum('stats.reach') ?? 0;
-        
+
         return view('influencers.show', compact(
-            'influencer', 
+            'influencer',
             'assignments',
             'publications',
-            'totalPublications', 
-            'totalEngagement', 
-            'avgEngagementRate', 
+            'totalPublications',
+            'totalEngagement',
+            'avgEngagementRate',
             'totalReach'
         ));
-        
     }
 
     /**
@@ -206,11 +173,14 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('update', $influencer);
-        
-        return view('influencers.edit', compact('influencer'));
+
+        return view('influencers.edit', $this->formData() + [
+            'influencer' => $influencer,
+            'accounts' => $influencer->socialAccounts->keyBy('platform'),
+        ]);
     }
 
     /**
@@ -222,69 +192,33 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('update', $influencer);
-        
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $influencer->id,
-            'phone' => 'nullable|string|max:20',
-            'pseudo' => 'nullable|string|max:255',
-            'birthdate' => 'nullable|date',
-            'city' => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:8',
-            'bio' => 'nullable|string',
-            'social_links' => 'nullable|array',
-            'profile_photo' => 'nullable|image|max:2048',
-            'is_active' => 'required|boolean',
-        ]);
-        
-        // Gérer les liens sociaux
-        $socialLinks = [];
-        if ($request->filled('social_facebook')) {
-            $socialLinks['facebook'] = $request->social_facebook;
-        }
-        if ($request->filled('social_instagram')) {
-            $socialLinks['instagram'] = $request->social_instagram;
-        }
-        if ($request->filled('social_twitter')) {
-            $socialLinks['twitter'] = $request->social_twitter;
-        }
-        if ($request->filled('social_tiktok')) {
-            $socialLinks['tiktok'] = $request->social_tiktok;
-        }
-        if ($request->filled('social_youtube')) {
-            $socialLinks['youtube'] = $request->social_youtube;
-        }
-        if ($request->filled('social_linkedin')) {
-            $socialLinks['linkedin'] = $request->social_linkedin;
-        }
-        
-        // Traiter la photo de profil si fournie
-        if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $influencer->profile_photo = $path;
-        }
-        
-        // Mettre à jour l'influenceur
-        $influencer->name = $validated['name'];
-        $influencer->email = $validated['email'];
-        $influencer->phone = $validated['phone'] ?? $influencer->phone;
-        $influencer->pseudo = $validated['pseudo'] ?? $influencer->pseudo;
-        $influencer->birthdate = $validated['birthdate'] ?? $influencer->birthdate;
-        $influencer->city = $validated['city'] ?? $influencer->city;
-        
-        if (!empty($validated['password'])) {
+
+        $validated = $request->validate($this->rules($influencer), $this->messages());
+
+        // Les champs du formulaire sont tous envoyés : une valeur vide efface la précédente.
+        $influencer->fill($this->profileAttributes($validated));
+
+        if (! empty($validated['password'])) {
             $influencer->password = Hash::make($validated['password']);
         }
-        
-        $influencer->bio = $validated['bio'] ?? $influencer->bio;
-        $influencer->social_links = !empty($socialLinks) ? json_encode($socialLinks) : $influencer->social_links;
-        $influencer->is_active = $validated['is_active'];
-        
+
+        // La case décochée n'est pas envoyée par le navigateur : absence = inactif.
+        $influencer->is_active = $request->boolean('is_active');
+
+        if ($request->hasFile('profile_photo')) {
+            if ($influencer->profile_photo) {
+                Storage::disk('public')->delete($influencer->profile_photo);
+            }
+            $influencer->profile_photo = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
         $influencer->save();
-        
+
+        $this->socialAccounts->syncForUser($influencer, $validated['social'] ?? [], Auth::id());
+
         return redirect()->route('influencers.show', $influencer)
             ->with('success', 'Influenceur mis à jour avec succès.');
     }
@@ -298,17 +232,17 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('delete', $influencer);
-        
+
         // On utilise soft delete
         $influencer->delete();
-        
+
         return redirect()->route('influencers.index')
             ->with('success', 'Influenceur supprimé avec succès.');
     }
-    
+
     /**
      * Affiche la page d'assignation de campagnes à un influenceur
      */
@@ -318,24 +252,24 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('assignCampaigns', $influencer);
-        
+
         // Récupérer les campagnes auxquelles l'influenceur n'est pas encore assigné
         $assignedCampaignIds = $influencer->influencerAssignments->pluck('campaign_id')->toArray();
-        
+
         $availableCampaigns = Campaign::whereNotIn('id', $assignedCampaignIds)
             ->where('status', '!=', 'completed')
             ->where('end_date', '>=', now())
             ->get();
-            
+
         // Récupérer les superviseurs disponibles
         $supervisors = User::where('role', 'supervisor')->where('is_active', true)->get();
-        
+
         return view('influencers.assign-campaigns', compact('influencer', 'availableCampaigns', 'supervisors'));
     }
-    
+
     /**
      * Assigne un influenceur à une campagne
      */
@@ -345,10 +279,10 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('assignCampaigns', $influencer);
-        
+
         $validated = $request->validate([
             'campaign_id' => 'required|exists:campaigns,id',
             'supervisor_id' => 'required|exists:users,id',
@@ -356,40 +290,40 @@ class InfluencerController extends Controller
             'required_deliverables' => 'nullable|array',
             'notes' => 'nullable|string',
         ]);
-        
+
         // Vérifier que le superviseur a bien le rôle "supervisor"
         $supervisor = User::findOrFail($validated['supervisor_id']);
         if ($supervisor->role !== 'supervisor') {
             return back()->withErrors(['supervisor_id' => 'L\'utilisateur sélectionné n\'est pas un superviseur.']);
         }
-        
+
         // Vérifier que l'influenceur n'est pas déjà assigné à cette campagne
         $existingAssignment = Assignment::where('campaign_id', $validated['campaign_id'])
             ->where('influencer_id', $influencer->id)
             ->first();
-            
+
         if ($existingAssignment) {
             return back()->withErrors(['campaign_id' => 'Cet influenceur est déjà assigné à cette campagne.']);
         }
-        
+
         // Créer l'assignation
         $requiredDeliverables = $request->input('required_deliverables') ?? [];
-        
+
         Assignment::create([
             'campaign_id' => $validated['campaign_id'],
             'influencer_id' => $influencer->id,
             'supervisor_id' => $validated['supervisor_id'],
             'status' => 'pending',
             'compensation' => $validated['compensation'] ?? null,
-            'required_deliverables' => !empty($requiredDeliverables) ? json_encode($requiredDeliverables) : null,
+            'required_deliverables' => ! empty($requiredDeliverables) ? json_encode($requiredDeliverables) : null,
             'assigned_date' => now(),
             'notes' => $validated['notes'] ?? null,
         ]);
-        
+
         return redirect()->route('influencers.show', $influencer)
             ->with('success', 'Influenceur assigné à la campagne avec succès.');
     }
-    
+
     /**
      * Affiche le tableau de bord des statistiques d'un influenceur
      */
@@ -399,34 +333,34 @@ class InfluencerController extends Controller
         if ($influencer->role !== 'influencer') {
             abort(404);
         }
-        
+
         // Vérifier les droits d'accès
         Gate::authorize('view', $influencer);
-        
+
         // Charger les publications et statistiques
         $publications = $influencer->publications()
             ->with(['latestStats', 'content', 'assignment.campaign'])
             ->get();
-            
+
         // Calculer les statistiques par plateforme
         $platformStats = $publications
             ->groupBy('platform')
             ->map(function ($items) {
                 return [
                     'count' => $items->count(),
-                    'engagement' => $items->sum(function($item) {
-                        return $item->latestStats ? 
-                               ($item->latestStats->likes + 
-                                $item->latestStats->comments + 
-                                $item->latestStats->shares + 
+                    'engagement' => $items->sum(function ($item) {
+                        return $item->latestStats ?
+                               ($item->latestStats->likes +
+                                $item->latestStats->comments +
+                                $item->latestStats->shares +
                                 $item->latestStats->saves) : 0;
                     }),
-                    'reach' => $items->sum(function($item) {
+                    'reach' => $items->sum(function ($item) {
                         return $item->latestStats ? $item->latestStats->reach : 0;
                     }),
                 ];
             });
-            
+
         // Calculer les statistiques d'évolution dans le temps
         $timeStats = $influencer->publications()
             ->join('stats', 'publications.id', '=', 'stats.publication_id')
@@ -434,7 +368,74 @@ class InfluencerController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-            
+
         return view('influencers.dashboard', compact('influencer', 'publications', 'platformStats', 'timeStats'));
+    }
+
+    /**
+     * Référentiels passés aux formulaires de création et d'édition.
+     */
+    private function formData(): array
+    {
+        return [
+            'categories' => config('influboss.categories'),
+            'platforms' => config('influboss.platforms'),
+        ];
+    }
+
+    /**
+     * Règles de validation du formulaire influenceur (création si $influencer est null).
+     */
+    private function rules(?User $influencer = null): array
+    {
+        $platformKeys = implode(',', array_keys(config('influboss.platforms')));
+
+        return [
+            'name' => 'required|string|max:255',
+            'pseudo' => 'nullable|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($influencer?->id)],
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'categories' => 'nullable|array',
+            'categories.*' => ['string', Rule::in(array_keys(config('influboss.categories')))],
+            'password' => ($influencer ? 'nullable' : 'required').'|string|min:8|confirmed',
+            'bio' => 'nullable|string',
+            'profile_photo' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
+            'social' => ['nullable', 'array:'.$platformKeys],
+            'social.*.url' => 'nullable|url|max:255',
+            'social.*.followers' => 'nullable|integer|min:0',
+        ];
+    }
+
+    private function messages(): array
+    {
+        return [
+            'categories.*.in' => 'Catégorie inconnue.',
+            'social.array' => 'Plateforme inconnue.',
+            'social.*.url.url' => 'L\'URL du profil n\'est pas valide.',
+            'social.*.url.max' => 'L\'URL du profil est trop longue.',
+            'social.*.followers.integer' => 'Le nombre d\'abonnés doit être un nombre entier.',
+            'social.*.followers.min' => 'Le nombre d\'abonnés ne peut pas être négatif.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+        ];
+    }
+
+    /**
+     * Attributs du profil issus des données validées (hors mot de passe, photo et statut).
+     */
+    private function profileAttributes(array $validated): array
+    {
+        return [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'pseudo' => $validated['pseudo'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'bio' => $validated['bio'] ?? null,
+            'categories' => array_values($validated['categories'] ?? []),
+        ];
     }
 }
