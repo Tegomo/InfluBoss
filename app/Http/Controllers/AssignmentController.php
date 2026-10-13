@@ -200,6 +200,7 @@ class AssignmentController extends Controller
 
         return view('assignments.show', [
             'assignment' => $assignment,
+            'deliverables' => $assignment->deliverables()->withProgress()->get(),
             'campaigns' => Campaign::all(),
             'influencers' => Influencer::all(),
             'supervisors' => Supervisor::all(),

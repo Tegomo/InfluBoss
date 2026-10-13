@@ -80,6 +80,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/legal-documents/{legalDocument}', [\App\Http\Controllers\LegalDocumentController::class, 'destroy'])
         ->name('legal-documents.destroy');
 
+    // Livrables des missions (droits gérés par DeliverablePolicy)
+    Route::post('/assignments/{assignment}/deliverables', [\App\Http\Controllers\DeliverableController::class, 'store'])
+        ->name('assignments.deliverables.store');
+    Route::get('/deliverables/{deliverable}/edit', [\App\Http\Controllers\DeliverableController::class, 'edit'])
+        ->name('deliverables.edit');
+    Route::put('/deliverables/{deliverable}', [\App\Http\Controllers\DeliverableController::class, 'update'])
+        ->name('deliverables.update');
+    Route::delete('/deliverables/{deliverable}', [\App\Http\Controllers\DeliverableController::class, 'destroy'])
+        ->name('deliverables.destroy');
+
     // Notifications (cloche)
     Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])
         ->name('notifications.read');

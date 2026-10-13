@@ -225,6 +225,20 @@
         </div>
     </div>
 
+    <!-- Cahier des charges : livrables et charte de marque -->
+    <div class="row">
+        <div class="col-md-12">
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ session('success') }}
+            </div>
+            @endif
+            @include('deliverables.partials.mission-card')
+            @include('campaigns.partials.brand-charter', ['campaign' => $assignment->campaign])
+        </div>
+    </div>
+
     <!-- Contenus associés -->
     <div class="row">
         <div class="col-md-12">
