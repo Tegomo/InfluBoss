@@ -88,6 +88,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Paiements de l'influenceur, par échéance.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'influencer_id')->orderBy('due_date')->orderBy('id');
+    }
+
+    /**
      * Documents légaux de l'influenceur (pièce d'identité, RIB…).
      */
     public function legalDocuments()

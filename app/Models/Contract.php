@@ -63,6 +63,29 @@ class Contract extends Model
         return $this->hasMany(ContractAlert::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->orderBy('due_date')->orderBy('id');
+    }
+
+    /**
+     * Montant du contrat, payé, en attente et reste à planifier (hors paiements annulés).
+     *
+     * @return array{contract_amount: ?float, paid: float, pending: float, remaining_to_schedule: ?float}
+     */
+    public function paymentSummary(): array
+    {
+        $totals = Payment::totalsFor($this->payments()->getQuery());
+        $amount = $this->amount !== null ? (float) $this->amount : null;
+
+        return [
+            'contract_amount' => $amount,
+            'paid' => $totals['paid'],
+            'pending' => $totals['pending'],
+            'remaining_to_schedule' => $amount !== null ? max(0.0, $amount - $totals['paid'] - $totals['pending']) : null,
+        ];
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_ACTIVE);

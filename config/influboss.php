@@ -86,6 +86,21 @@ return [
         'validated' => ['label' => 'Validé', 'badge' => 'success'],
     ],
 
+    // Paiements. « En retard » n'est pas stocké : en attente avec échéance dépassée.
+    'payment_statuses' => [
+        'pending' => ['label' => 'En attente', 'badge' => 'warning'],
+        'paid' => ['label' => 'Payé', 'badge' => 'success'],
+        'cancelled' => ['label' => 'Annulé', 'badge' => 'secondary'],
+    ],
+
+    'payment_methods' => [
+        'bank_transfer' => 'Virement bancaire',
+        'mobile_money' => 'Mobile Money',
+        'cash' => 'Espèces',
+        'cheque' => 'Chèque',
+        'other' => 'Autre',
+    ],
+
     // Fichiers joints (contrats, documents légaux) : extensions et taille maximale en Ko.
     'upload_mimes' => 'pdf,jpg,jpeg,png',
     'upload_max_kb' => 10240,
