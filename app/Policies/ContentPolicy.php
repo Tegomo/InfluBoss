@@ -33,7 +33,7 @@ class ContentPolicy
     public function view(User $user, Content $content)
     {
         // Les admin, super admin et superviseurs peuvent voir tous les contenus
-        if (in_array($user->role, ['admin', 'super_admin', 'supervisor'])) {
+        if (in_array($user->role, ['admin', 'super_admin', 'supervisor', 'client'])) {
             return true;
         }
         

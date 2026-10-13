@@ -124,8 +124,8 @@
                     </li>
                     @endif
                     
-                    {{-- Menu Influenceurs visible uniquement pour les admins --}}
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+                    {{-- Menu Influenceurs : admins et client (lecture seule) --}}
+                    @if(in_array(Auth::user()->role, ['admin', 'super_admin', 'client']))
                     <li class="nav-item">
                         <a href="{{ route('influencers.index') }}" class="nav-link {{ request()->routeIs('influencers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i>
@@ -208,8 +208,8 @@
                         </a>
                     </li>
                     
-                    {{-- Menu Statistiques visible uniquement pour les admins --}}
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+                    {{-- Menu Statistiques : admins et client (lecture seule) --}}
+                    @if(in_array(Auth::user()->role, ['admin', 'super_admin', 'client']))
                     <li class="nav-item">
                         <a href="{{ route('admin.statistics') }}" class="nav-link {{ request()->routeIs('admin.statistics') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-chart-bar"></i>

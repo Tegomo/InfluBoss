@@ -96,7 +96,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,supervisor,influencer',
+            'role' => 'required|string|in:admin,supervisor,influencer,client',
             'pseudo' => 'nullable|string|max:255',
             'birthdate' => 'nullable|date',
             'phone' => 'nullable|string|max:20',
@@ -146,7 +146,7 @@ class UserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|string|in:admin,supervisor,influencer',
+            'role' => 'required|string|in:admin,supervisor,influencer,client',
             'pseudo' => 'nullable|string|max:255',
             'birthdate' => 'nullable|date',
             'phone' => 'nullable|string|max:20',

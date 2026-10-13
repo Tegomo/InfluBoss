@@ -34,7 +34,7 @@ class PublicationPolicy
     public function view(User $user, Publication $publication)
     {
         // Les admin et super admin peuvent voir toutes les publications
-        if (in_array($user->role, ['admin', 'super_admin'])) {
+        if (in_array($user->role, ['admin', 'super_admin', 'client'])) {
             return true;
         }
         

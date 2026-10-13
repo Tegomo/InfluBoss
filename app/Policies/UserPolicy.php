@@ -12,8 +12,13 @@ class UserPolicy
     /**
      * Détermine si l'utilisateur peut voir la liste des utilisateurs
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, ?string $role = null): bool
     {
+        // Le client (annonceur) consulte uniquement la liste des ambassadeurs.
+        if ($user->role === 'client') {
+            return $role === null || $role === 'influencer';
+        }
+
         return in_array($user->role, ['super_admin', 'admin', 'supervisor']);
     }
 
@@ -22,6 +27,10 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
+        if ($user->role === 'client') {
+            return $model->role === 'influencer' || $user->id === $model->id;
+        }
+
         return in_array($user->role, ['super_admin', 'admin', 'supervisor']) || $user->id === $model->id;
     }
 

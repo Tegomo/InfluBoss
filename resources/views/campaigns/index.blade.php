@@ -26,11 +26,11 @@
                 <div class="card-header">
                     <h3 class="card-title">Liste des campagnes</h3>
                     <div class="card-tools">
-                        @if(Auth::user()->role !== 'supervisor')
+                        @can('create', \App\Models\Campaign::class)
                         <a href="{{ route('campaigns.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> Nouvelle campagne
                         </a>
-                        @endif
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">

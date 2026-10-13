@@ -159,6 +159,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Determine if user is the read-only client (advertiser)
+     */
+    public function isClient(): bool
+    {
+        return $this->role === 'client';
+    }
+
+    /**
      * Determine if user is an influencer
      */
     public function isInfluencer(): bool

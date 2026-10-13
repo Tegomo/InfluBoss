@@ -31,11 +31,13 @@ Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logo
 
 // Routes du dashboard
 Route::middleware(['auth'])->group(function () {
-    // Routes pour les utilisateurs
-    Route::resource('users', \App\Http\Controllers\UserController::class);
-    Route::get('/users-all', [\App\Http\Controllers\UserController::class, 'indexAll'])->name('users.all');
-    Route::get('/influencers-list', [\App\Http\Controllers\UserController::class, 'indexInfluencers'])->name('users.influencers');
-    Route::get('/supervisors-list', [\App\Http\Controllers\UserController::class, 'indexSupervisors'])->name('users.supervisors');
+    // Routes pour les utilisateurs (gestion des comptes : admins uniquement)
+    Route::middleware(['\App\Http\Middleware\RoleMiddleware:admin,super_admin'])->group(function () {
+        Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::get('/users-all', [\App\Http\Controllers\UserController::class, 'indexAll'])->name('users.all');
+        Route::get('/influencers-list', [\App\Http\Controllers\UserController::class, 'indexInfluencers'])->name('users.influencers');
+        Route::get('/supervisors-list', [\App\Http\Controllers\UserController::class, 'indexSupervisors'])->name('users.supervisors');
+    });
 
     // Route principale du dashboard
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
@@ -154,8 +156,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/supervisor/pending-publications', [SupervisorController::class, 'pendingPublications'])
         ->name('supervisor.pending-publications');
     
-    // Routes pour l'administration (accès restreint)
-    Route::middleware(['\App\Http\Middleware\RoleMiddleware:admin,super_admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Routes pour l'administration (accès restreint). Le client (lecture seule) n'y voit que les statistiques :
+    // le tableau de bord admin le redirige et les sous-groupes super_admin le refusent.
+    Route::middleware(['\App\Http\Middleware\RoleMiddleware:admin,super_admin,client'])->prefix('admin')->name('admin.')->group(function () {
         // Tableau de bord administrateur
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         

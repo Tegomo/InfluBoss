@@ -11,7 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Compte client (annonceur) en lecture seule sur toute l'application.
+        $middleware->web(append: \App\Http\Middleware\ReadOnlyClient::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -81,6 +81,7 @@
                             @endif
                             <option value="supervisor" {{ old('role') === 'supervisor' ? 'selected' : '' }}>Superviseur</option>
                             <option value="influencer" {{ old('role') === 'influencer' ? 'selected' : '' }}>Influenceur</option>
+                            <option value="client" {{ old('role') === 'client' ? 'selected' : '' }}>Client (lecture seule)</option>
                         </select>
                         @error('role')
                         <span class="invalid-feedback">{{ $message }}</span>

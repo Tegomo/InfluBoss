@@ -14,7 +14,7 @@ class AssignmentPolicy
     public function view(User $user, Assignment $assignment): bool
     {
         return match ($user->role) {
-            'super_admin', 'admin' => true,
+            'super_admin', 'admin', 'client' => true,
             'supervisor' => $assignment->supervisor_id === $user->id
                 || $user->influencers()->whereKey($assignment->influencer_id)->exists(),
             'influencer' => $assignment->influencer_id === $user->id,

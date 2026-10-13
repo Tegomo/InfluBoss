@@ -78,9 +78,11 @@
                 <div class="card-header">
                     <h3 class="card-title">Liste des publications</h3>
                     <div class="card-tools">
+                        @unless(Auth::user()->isClient())
                         <a href="{{ route('publications.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus mr-1"></i> Nouvelle publication
                         </a>
+                        @endunless
                     </div>
                 </div>
                 <div class="card-body">

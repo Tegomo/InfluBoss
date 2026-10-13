@@ -33,7 +33,7 @@ class CampaignPolicy
     public function view(User $user, Campaign $campaign)
     {
         // Les admin, super admin et superviseurs peuvent voir toutes les campagnes
-        if (in_array($user->role, ['admin', 'super_admin', 'supervisor'])) {
+        if (in_array($user->role, ['admin', 'super_admin', 'supervisor', 'client'])) {
             return true;
         }
         

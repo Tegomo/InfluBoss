@@ -82,6 +82,7 @@
                             @endif
                             <option value="supervisor" {{ $user->role == 'supervisor' ? 'selected' : '' }}>Superviseur</option>
                             <option value="influencer" {{ $user->role == 'influencer' ? 'selected' : '' }}>Influenceur</option>
+                            <option value="client" {{ $user->role == 'client' ? 'selected' : '' }}>Client (lecture seule)</option>
                         </select>
                         @error('role')
                         <span class="invalid-feedback">{{ $message }}</span>
