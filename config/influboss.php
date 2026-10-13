@@ -68,6 +68,24 @@ return [
         'other' => 'Autre',
     ],
 
+    // Livrables d'une mission (cahier des charges)
+    'deliverable_types' => [
+        'post' => 'Publication',
+        'story' => 'Story',
+        'reel' => 'Reel',
+        'video' => 'Vidéo',
+        'live' => 'Live',
+        'other' => 'Autre',
+    ],
+
+    // Statut => [libellé, couleur de badge Bootstrap]
+    'deliverable_statuses' => [
+        'todo' => ['label' => 'À faire', 'badge' => 'secondary'],
+        'in_progress' => ['label' => 'En cours', 'badge' => 'info'],
+        'delivered' => ['label' => 'Livré', 'badge' => 'primary'],
+        'validated' => ['label' => 'Validé', 'badge' => 'success'],
+    ],
+
     // Fichiers joints (contrats, documents légaux) : extensions et taille maximale en Ko.
     'upload_mimes' => 'pdf,jpg,jpeg,png',
     'upload_max_kb' => 10240,

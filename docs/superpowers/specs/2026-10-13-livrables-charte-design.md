@@ -26,8 +26,10 @@ ce qu'elle était censée livrer.
    - publications vérifiées ≥ quantité → « Validé » ;
    - publications soumises non rejetées ≥ quantité → « Livré » ;
    - au moins une publication soumise → « En cours » ;
-   - sinon « À faire », sauf si le livrable avait été passé manuellement « En cours ».
-   Les admins et superviseurs peuvent aussi changer le statut à la main (ex. livrable remis hors plateforme).
+   - sinon « À faire ».
+   Les admins et superviseurs peuvent changer le statut à la main (ex. « En cours » quand le tournage a
+   commencé, ou « Validé » pour un livrable remis hors plateforme). Ce statut manuel est conservé tant
+   qu'aucune publication non rejetée n'est rattachée ; dès qu'il y en a une, le calcul automatique reprend.
 4. **`assignments.required_posts` = somme des quantités** des livrables dès qu'il en existe, pour que la
    complétion automatique de mission existante reste cohérente.
 5. **Droits** : admins, superviseur de la mission et superviseurs liés à l'influenceur ajoutent, modifient et

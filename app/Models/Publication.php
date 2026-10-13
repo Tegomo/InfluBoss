@@ -10,7 +10,33 @@ use App\Models\Note;
 class Publication extends Model
 {
     use HasFactory, SoftDeletes;
-    
+
+    protected static function booted(): void
+    {
+        // Tout changement d'une publication (création, statut, livrable, suppression) met à jour le
+        // statut du ou des livrables concernés.
+        static::saved(fn (Publication $publication) => $publication->refreshDeliverables());
+        static::deleted(fn (Publication $publication) => $publication->refreshDeliverables());
+        static::restored(fn (Publication $publication) => $publication->refreshDeliverables());
+    }
+
+    /**
+     * Recalcule le statut du livrable actuel et, si la publication a changé de livrable, de l'ancien.
+     */
+    public function refreshDeliverables(): void
+    {
+        $ids = array_unique(array_filter([$this->deliverable_id, $this->getOriginal('deliverable_id')]));
+
+        foreach (Deliverable::whereIn('id', $ids)->get() as $deliverable) {
+            $deliverable->refreshStatus();
+        }
+    }
+
+    public function deliverable()
+    {
+        return $this->belongsTo(Deliverable::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -18,6 +44,7 @@ class Publication extends Model
      */
     protected $fillable = [
         'assignment_id',
+        'deliverable_id',
         'content_id',
         'influencer_id',
         'platform',

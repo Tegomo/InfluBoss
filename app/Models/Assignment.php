@@ -89,6 +89,14 @@ class Assignment extends Model
     /**
      * Get the notes associated with this assignment
      */
+    /**
+     * Livrables attendus (cahier des charges), par date limite.
+     */
+    public function deliverables()
+    {
+        return $this->hasMany(Deliverable::class)->orderBy('due_date')->orderBy('id');
+    }
+
     public function notes()
     {
         return $this->hasMany(Note::class);

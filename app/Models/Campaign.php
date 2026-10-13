@@ -28,6 +28,11 @@ class Campaign extends Model
         'objectives',
         'created_by',
         'updated_by',
+        'brand_tone',
+        'visual_guidelines',
+        'required_hashtags',
+        'required_mentions',
+        'products',
     ];
     
     /**
@@ -41,7 +46,36 @@ class Campaign extends Model
         'budget' => 'decimal:2',
         'objectives' => 'json',
         'platforms' => 'json',
+        'required_hashtags' => 'array',
+        'required_mentions' => 'array',
     ];
+
+    /**
+     * Transforme une saisie libre (« Orange, #4G\n#Orange ») en liste dédoublonnée préfixée (#… ou @…).
+     *
+     * @return array<int, string>
+     */
+    public static function parseTags(?string $input, string $prefix): array
+    {
+        $tags = [];
+        foreach (preg_split('/[\s,;]+/u', (string) $input, -1, PREG_SPLIT_NO_EMPTY) as $raw) {
+            $tag = ltrim($raw, '#@');
+            if ($tag !== '') {
+                $tags[mb_strtolower($tag)] ??= $prefix.$tag;
+            }
+        }
+
+        return array_values($tags);
+    }
+
+    /**
+     * La campagne a-t-elle au moins un élément de charte de marque renseigné ?
+     */
+    public function hasBrandGuidelines(): bool
+    {
+        return filled($this->brand_tone) || filled($this->visual_guidelines) || filled($this->products)
+            || ! empty($this->required_hashtags) || ! empty($this->required_mentions);
+    }
     
     /**
      * Get the admin user who created the campaign
