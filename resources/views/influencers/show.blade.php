@@ -1,7 +1,7 @@
 @extends('layouts.adminlte')
 
 @section('title')
-Embassadeur: {{ $influencer->name }}
+Ambassadeur : {{ $influencer->name }}
 @endsection
 
 @section('breadcrumb')
@@ -10,9 +10,26 @@ Embassadeur: {{ $influencer->name }}
 @endsection
 
 @section('content')
+@if(session('success'))
+<div class="alert alert-success alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    {{ session('success') }}
+</div>
+@endif
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <ul class="mb-0">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 <div class="row">
     <div class="col-md-4">
-        <!-- Profile Card -->
+        {{-- Profil --}}
         <div class="card card-primary card-outline">
             <div class="card-body box-profile">
                 <div class="text-center">
@@ -26,7 +43,14 @@ Embassadeur: {{ $influencer->name }}
                 </div>
 
                 <h3 class="profile-username text-center">{{ $influencer->name }}</h3>
-                <p class="text-muted text-center">Embassadeur</p>
+                <p class="text-muted text-center mb-2">Ambassadeur</p>
+                <p class="text-center">
+                    @forelse($influencer->category_labels as $label)
+                        <span class="badge badge-info mr-1">{{ $label }}</span>
+                    @empty
+                        <span class="text-muted small">Aucune catégorie</span>
+                    @endforelse
+                </p>
 
                 <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
@@ -39,16 +63,16 @@ Embassadeur: {{ $influencer->name }}
                         <b>Téléphone</b> <a class="float-right">{{ $influencer->phone ?? 'Non renseigné' }}</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Ville</b> <a class="float-right">{{ $influencer->city ?? 'Non renseigné' }}</a>
+                        <b>Adresse</b> <a class="float-right text-right">{{ $influencer->address ?? 'Non renseignée' }}</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Date de naissance</b> <a class="float-right">{{ $influencer->birthdate ? $influencer->birthdate->format('d/m/Y') : 'Non renseigné' }}</a>
+                        <b>Ville</b> <a class="float-right">{{ $influencer->city ?? 'Non renseignée' }}</a>
                     </li>
                     <li class="list-group-item">
                         <b>Missions</b> <a class="float-right">{{ $assignments->count() }}</a>
                     </li>
                     <li class="list-group-item">
-                        <b>Statut</b> 
+                        <b>Statut</b>
                         <span class="float-right">
                             @if($influencer->is_active)
                                 <span class="badge badge-success">Actif</span>
@@ -59,79 +83,95 @@ Embassadeur: {{ $influencer->name }}
                     </li>
                 </ul>
 
+                @if($influencer->bio)
+                    <p class="text-muted small">{{ $influencer->bio }}</p>
+                @endif
+
                 @can('update', $influencer)
                 <a href="{{ route('influencers.edit', $influencer) }}" class="btn btn-primary btn-block"><i class="fas fa-edit mr-1"></i> Modifier</a>
                 @endcan
 
-                @if($influencer->is_active)
-                <a href="{{ route('influencers.assign-campaigns', $influencer) }}" class="btn btn-info btn-block mt-2"><i class="fas fa-plus-circle mr-1"></i> Assigner à une campagne</a>
+                @if($influencer->is_active && in_array(auth()->user()->role, ['admin', 'super_admin']))
+                <a href="{{ route('assignments.create') }}" class="btn btn-info btn-block mt-2"><i class="fas fa-plus-circle mr-1"></i> Créer une mission</a>
                 @endif
             </div>
-            <!-- /.card-body -->
         </div>
-        <!-- /.card -->
 
-        <!-- Social Links Box -->
+        {{-- Réseaux sociaux et abonnés --}}
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title">Réseaux sociaux</h3>
+                <h3 class="card-title">Réseaux sociaux et abonnés</h3>
             </div>
-            <!-- /.card-header -->
             <div class="card-body">
-                @php 
-                    $socialLinks = is_string($influencer->social_links) ? json_decode($influencer->social_links, true) : $influencer->social_links; 
-                @endphp
-                
-                @if($socialLinks && count($socialLinks) > 0)
-                    <ul class="list-group list-group-unbordered">
-                        @foreach($socialLinks as $platform => $link)
-                            @if(!empty($link))
-                                <li class="list-group-item">
-                                    <b>
-                                        @switch(strtolower($platform))
-                                            @case('instagram')
-                                                <i class="fab fa-instagram text-pink mr-1"></i> Instagram
-                                                @break
-                                            @case('youtube')
-                                                <i class="fab fa-youtube text-danger mr-1"></i> YouTube
-                                                @break
-                                            @case('tiktok')
-                                                <i class="fab fa-tiktok mr-1"></i> TikTok
-                                                @break
-                                            @case('facebook')
-                                                <i class="fab fa-facebook text-primary mr-1"></i> Facebook
-                                                @break
-                                            @case('twitter')
-                                                <i class="fab fa-twitter text-info mr-1"></i> Twitter
-                                                @break
-                                            @case('linkedin')
-                                                <i class="fab fa-linkedin text-primary mr-1"></i> LinkedIn
-                                                @break
-                                            @case('pinterest')
-                                                <i class="fab fa-pinterest text-danger mr-1"></i> Pinterest
-                                                @break
-                                            @case('snapchat')
-                                                <i class="fab fa-snapchat text-warning mr-1"></i> Snapchat
-                                                @break
-                                            @default
-                                                <i class="fas fa-link mr-1"></i> {{ ucfirst($platform) }}
-                                        @endswitch
-                                    </b> 
-                                    <a href="{{ $link }}" target="_blank" class="float-right">Voir <i class="fas fa-external-link-alt fa-xs"></i></a>
-                                </li>
-                            @endif
+                @if($platformCards->isNotEmpty())
+                    <ul class="list-group list-group-unbordered mb-3">
+                        @foreach($platformCards as $card)
+                            @php $account = $card['account']; @endphp
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="{{ $account->config['icon'] }} mr-1" style="color: {{ $account->config['color'] }}"></i>
+                                        <b>{{ $account->label }}</b>
+                                        @if($account->handle)
+                                            <span class="text-muted small ml-1">{{ '@' . $account->handle }}</span>
+                                        @endif
+                                        @if($account->url)
+                                            <a href="{{ $account->url }}" target="_blank" rel="noopener" class="ml-1" title="Ouvrir le profil"><i class="fas fa-external-link-alt fa-xs"></i></a>
+                                        @endif
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-weight-bold">{{ $account->followers_count !== null ? number_format($account->followers_count) : '—' }}</span>
+                                        <span class="text-muted small">abonnés</span>
+                                        @if($card['delta'] !== null)
+                                            @if($card['delta'] > 0)
+                                                <span class="badge badge-success ml-1">+{{ number_format($card['delta']) }}</span>
+                                            @elseif($card['delta'] < 0)
+                                                <span class="badge badge-danger ml-1">-{{ number_format(abs($card['delta'])) }}</span>
+                                            @else
+                                                <span class="badge badge-secondary ml-1">=</span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                                @if($account->last_synced_at)
+                                    <small class="text-muted">Mis à jour le {{ $account->last_synced_at->format('d/m/Y') }}</small>
+                                @endif
+                            </li>
                         @endforeach
                     </ul>
+                    <p class="mb-0">
+                        <b>Abonnés totaux</b>
+                        <span class="float-right font-weight-bold">{{ number_format($influencer->total_followers) }}</span>
+                    </p>
                 @else
-                    <p class="text-muted">Aucun réseau social enregistré.</p>
+                    <p class="text-muted mb-0">Aucun réseau social enregistré.</p>
                 @endif
+
+                @can('updateFollowers', $influencer)
+                    @if($platformCards->isNotEmpty())
+                    <hr>
+                    <form method="POST" action="{{ route('influencers.update-followers', $influencer) }}">
+                        @csrf
+                        <p class="mb-2"><b>Mettre à jour les abonnés</b></p>
+                        @foreach($platformCards as $card)
+                            @php $account = $card['account']; @endphp
+                            <div class="form-group mb-2">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="min-width: 7rem"><i class="{{ $account->config['icon'] }} mr-1"></i> {{ $account->label }}</span>
+                                    </div>
+                                    <input type="number" min="0" step="1" class="form-control @error("followers.{$account->platform}") is-invalid @enderror" name="followers[{{ $account->platform }}]" placeholder="Nouveau nombre" value="{{ old("followers.{$account->platform}") }}" aria-label="Abonnés {{ $account->label }}">
+                                </div>
+                            </div>
+                        @endforeach
+                        <button type="submit" class="btn btn-sm btn-outline-primary btn-block"><i class="fas fa-sync-alt mr-1"></i> Enregistrer le relevé</button>
+                    </form>
+                    @endif
+                @endcan
             </div>
-            <!-- /.card-body -->
         </div>
-        <!-- /.card -->
     </div>
-    <!-- /.col -->
-    
+
     <div class="col-md-8">
         <div class="card">
             <div class="card-header p-2">
@@ -140,75 +180,94 @@ Embassadeur: {{ $influencer->name }}
                     <li class="nav-item"><a class="nav-link" href="#publications" data-toggle="tab">Publications</a></li>
                     <li class="nav-item"><a class="nav-link" href="#stats" data-toggle="tab">Statistiques</a></li>
                 </ul>
-            </div><!-- /.card-header -->
+            </div>
             <div class="card-body">
                 <div class="tab-content">
+                    {{-- Historique des campagnes avec résultats --}}
                     <div class="active tab-pane" id="campaigns">
-                        @if($assignments->count() > 0)
+                        @if($campaignResults->isNotEmpty())
+                        <p class="text-muted small">Résultats calculés sur le dernier relevé de chaque publication vérifiée.</p>
                         <div class="table-responsive">
-                            <table class="table table-hover table-striped">
+                            <table class="table table-hover table-striped table-sm">
                                 <thead>
                                     <tr>
                                         <th>Campagne</th>
                                         <th>Statut</th>
                                         <th>Échéance</th>
-                                        <th>Postes requis</th>
-                                        <th>Postes publiés</th>
-                                        <th>Actions</th>
+                                        <th title="vérifiées / publiées / requises">Publications</th>
+                                        <th class="text-right">Likes</th>
+                                        <th class="text-right">Commentaires</th>
+                                        <th class="text-right">Partages</th>
+                                        <th class="text-right">Vues</th>
+                                        <th class="text-right">Engagement</th>
+                                        <th class="text-right">Taux</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($assignments as $assignment)
+                                    @foreach($campaignResults as $result)
+                                    @php $assignment = $result['assignment']; @endphp
                                     <tr>
-                                        <td>{{ $assignment->campaign->name }}</td>
+                                        <td>
+                                            @if($result['campaign'])
+                                                <a href="{{ route('campaigns.show', $result['campaign']) }}">{{ $result['campaign']->name }}</a>
+                                                <br><small class="text-muted">{{ $result['campaign']->start_date?->format('d/m/Y') }} – {{ $result['campaign']->end_date?->format('d/m/Y') }}</small>
+                                            @else
+                                                <span class="text-muted">Campagne supprimée</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             @php
-                                                $status = $assignment->status;
-                                                $badgeClass = 'secondary';
-                                                switch($status) {
-                                                    case 'pending':
-                                                        $badgeClass = 'warning';
-                                                        $statusText = 'En attente';
-                                                        break;
-                                                    case 'in_progress':
-                                                        $badgeClass = 'info';
-                                                        $statusText = 'En cours';
-                                                        break;
-                                                    case 'completed':
-                                                        $badgeClass = 'success';
-                                                        $statusText = 'Terminée';
-                                                        break;
-                                                    case 'cancelled':
-                                                        $badgeClass = 'danger';
-                                                        $statusText = 'Annulée';
-                                                        break;
-                                                    default:
-                                                        $statusText = ucfirst($status);
-                                                }
+                                                [$badgeClass, $statusText] = match($assignment->status) {
+                                                    'pending' => ['warning', 'En attente'],
+                                                    'accepted' => ['info', 'Acceptée'],
+                                                    'in_progress' => ['info', 'En cours'],
+                                                    'declined' => ['danger', 'Refusée'],
+                                                    'completed' => ['success', 'Terminée'],
+                                                    default => ['secondary', ucfirst((string) $assignment->status)],
+                                                };
                                             @endphp
                                             <span class="badge badge-{{ $badgeClass }}">{{ $statusText }}</span>
                                         </td>
-                                        <td>{{ $assignment->deadline ? $assignment->deadline->format('d/m/Y') : 'Non définie' }}</td>
-                                        <td>{{ $assignment->required_posts }}</td>
-                                        <td>{{ $assignment->publications->count() }}</td>
+                                        <td>{{ $assignment->deadline ? $assignment->deadline->format('d/m/Y') : '—' }}</td>
+                                        <td>{{ $result['verified'] }} / {{ $result['published'] }} / {{ $result['required_posts'] }}</td>
+                                        <td class="text-right">{{ number_format($result['likes']) }}</td>
+                                        <td class="text-right">{{ number_format($result['comments']) }}</td>
+                                        <td class="text-right">{{ number_format($result['shares']) }}</td>
+                                        <td class="text-right">{{ number_format($result['views']) }}</td>
+                                        <td class="text-right">{{ number_format($result['engagement']) }}</td>
+                                        <td class="text-right">{{ $result['engagement_rate'] !== null ? number_format($result['engagement_rate'], 2) . ' %' : '—' }}</td>
                                         <td>
-                                            <a href="{{ route('assignments.show', $assignment) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('assignments.show', $assignment) }}" class="btn btn-sm btn-info" title="Voir la mission">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot>
+                                    <tr class="font-weight-bold">
+                                        <th colspan="3">Total</th>
+                                        <th>{{ $campaignTotals['verified'] }} / {{ $campaignTotals['published'] }} / {{ $campaignTotals['required_posts'] }}</th>
+                                        <th class="text-right">{{ number_format($campaignTotals['likes']) }}</th>
+                                        <th class="text-right">{{ number_format($campaignTotals['comments']) }}</th>
+                                        <th class="text-right">{{ number_format($campaignTotals['shares']) }}</th>
+                                        <th class="text-right">{{ number_format($campaignTotals['views']) }}</th>
+                                        <th class="text-right">{{ number_format($campaignTotals['engagement']) }}</th>
+                                        <th class="text-right">{{ $campaignTotals['engagement_rate'] !== null ? number_format($campaignTotals['engagement_rate'], 2) . ' %' : '—' }}</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         @else
-                        <div class="alert alert-info">
-                            Cet influenceur n'est assigné à aucune campagne pour le moment.
+                        <div class="alert alert-info mb-0">
+                            Cet ambassadeur n'a encore participé à aucune campagne.
                         </div>
                         @endif
                     </div>
-                    <!-- /.tab-pane -->
-                    
+
+                    {{-- Publications --}}
                     <div class="tab-pane" id="publications">
                         @if($publications->count() > 0)
                         <div class="table-responsive">
@@ -224,51 +283,25 @@ Embassadeur: {{ $influencer->name }}
                                 </thead>
                                 <tbody>
                                     @foreach($publications as $publication)
+                                    @php $platformConfig = config('influboss.platforms.' . strtolower($publication->platform)); @endphp
                                     <tr>
                                         <td>{{ $publication->published_at ? $publication->published_at->format('d/m/Y H:i') : 'Non publié' }}</td>
-                                        <td>{{ $publication->assignment->campaign->name }}</td>
+                                        <td>{{ $publication->assignment?->campaign?->name ?? '—' }}</td>
                                         <td>
-                                            @switch(strtolower($publication->platform))
-                                                @case('instagram')
-                                                    <i class="fab fa-instagram text-pink"></i> Instagram
-                                                    @break
-                                                @case('youtube')
-                                                    <i class="fab fa-youtube text-danger"></i> YouTube
-                                                    @break
-                                                @case('tiktok')
-                                                    <i class="fab fa-tiktok"></i> TikTok
-                                                    @break
-                                                @case('facebook')
-                                                    <i class="fab fa-facebook text-primary"></i> Facebook
-                                                    @break
-                                                @default
-                                                    <i class="fas fa-link"></i> {{ ucfirst($publication->platform) }}
-                                            @endswitch
+                                            @if($platformConfig)
+                                                <i class="{{ $platformConfig['icon'] }}" style="color: {{ $platformConfig['color'] }}"></i> {{ $platformConfig['label'] }}
+                                            @else
+                                                <i class="fas fa-link"></i> {{ ucfirst($publication->platform) }}
+                                            @endif
                                         </td>
                                         <td>
                                             @php
-                                                $status = $publication->status;
-                                                $badgeClass = 'secondary';
-                                                switch($status) {
-                                                    case 'draft':
-                                                        $badgeClass = 'secondary';
-                                                        $statusText = 'Brouillon';
-                                                        break;
-                                                    case 'pending':
-                                                        $badgeClass = 'warning';
-                                                        $statusText = 'En attente';
-                                                        break;
-                                                    case 'approved':
-                                                        $badgeClass = 'success';
-                                                        $statusText = 'Approuvé';
-                                                        break;
-                                                    case 'rejected':
-                                                        $badgeClass = 'danger';
-                                                        $statusText = 'Rejeté';
-                                                        break;
-                                                    default:
-                                                        $statusText = ucfirst($status);
-                                                }
+                                                [$badgeClass, $statusText] = match($publication->status) {
+                                                    'pending_verification' => ['warning', 'En attente de vérification'],
+                                                    'verified' => ['success', 'Vérifiée'],
+                                                    'rejected' => ['danger', 'Rejetée'],
+                                                    default => ['secondary', ucfirst((string) $publication->status)],
+                                                };
                                             @endphp
                                             <span class="badge badge-{{ $badgeClass }}">{{ $statusText }}</span>
                                         </td>
@@ -277,7 +310,7 @@ Embassadeur: {{ $influencer->name }}
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @if($publication->post_url)
-                                                <a href="{{ $publication->post_url }}" target="_blank" class="btn btn-sm btn-secondary">
+                                                <a href="{{ $publication->post_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-secondary">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </a>
                                             @endif
@@ -288,13 +321,13 @@ Embassadeur: {{ $influencer->name }}
                             </table>
                         </div>
                         @else
-                        <div class="alert alert-info">
-                            Cet influenceur n'a pas encore de publications.
+                        <div class="alert alert-info mb-0">
+                            Cet ambassadeur n'a pas encore de publications.
                         </div>
                         @endif
                     </div>
-                    <!-- /.tab-pane -->
-                    
+
+                    {{-- Statistiques --}}
                     <div class="tab-pane" id="stats">
                         <div class="row">
                             <div class="col-md-6">
@@ -326,36 +359,50 @@ Embassadeur: {{ $influencer->name }}
                             </div>
                             <div class="col-md-6">
                                 <div class="info-box">
-                                    <span class="info-box-icon bg-danger"><i class="fas fa-calendar"></i></span>
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-users"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Temps de réponse moyen</span>
-                                        <span class="info-box-number">3 jours</span>
+                                        <span class="info-box-text">Abonnés totaux</span>
+                                        <span class="info-box-number">{{ number_format($influencer->total_followers) }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Graphique des performances -->
+
+                        {{-- Évolution des abonnés --}}
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Évolution des abonnés (12 derniers mois)</h3>
+                            </div>
+                            <div class="card-body">
+                                @if(count($followerChart['datasets']) > 0)
+                                    <canvas id="followersChart" height="110"></canvas>
+                                @else
+                                    <div class="text-center text-muted py-4">
+                                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                        <p class="mb-0">Aucun historique d'abonnés pour le moment. Les relevés saisis apparaîtront ici.</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Performance des publications vérifiées --}}
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">Performance des publications</h3>
                             </div>
                             <div class="card-body">
                                 @php
-                                    $verifiedPublications = $publications->where('status', 'verified');
-                                    $hasStats = $verifiedPublications->filter(function($pub) {
-                                        return $pub->latestStats !== null;
-                                    })->count() > 0;
+                                    $verifiedPublications = $publications->where('status', 'verified')->filter(fn ($pub) => $pub->latestStats !== null);
                                 @endphp
-                                
-                                @if($hasStats)
+
+                                @if($verifiedPublications->isNotEmpty())
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="info-box bg-info">
                                                 <span class="info-box-icon"><i class="fas fa-heart"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Likes totaux</span>
-                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->likes : 0; })) }}</span>
+                                                    <span class="info-box-number">{{ number_format($campaignTotals['likes']) }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -364,7 +411,7 @@ Embassadeur: {{ $influencer->name }}
                                                 <span class="info-box-icon"><i class="fas fa-comments"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Commentaires</span>
-                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->comments : 0; })) }}</span>
+                                                    <span class="info-box-number">{{ number_format($campaignTotals['comments']) }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -373,7 +420,7 @@ Embassadeur: {{ $influencer->name }}
                                                 <span class="info-box-icon"><i class="fas fa-share"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Partages</span>
-                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->shares : 0; })) }}</span>
+                                                    <span class="info-box-number">{{ number_format($campaignTotals['shares']) }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -382,63 +429,74 @@ Embassadeur: {{ $influencer->name }}
                                                 <span class="info-box-icon"><i class="fas fa-eye"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Vues totales</span>
-                                                    <span class="info-box-number">{{ number_format($verifiedPublications->sum(function($pub) { return $pub->latestStats ? $pub->latestStats->views : 0; })) }}</span>
+                                                    <span class="info-box-number">{{ number_format($campaignTotals['views']) }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="table-responsive mt-3">
-                                        <table class="table table-striped">
+                                        <table class="table table-striped table-sm">
                                             <thead>
                                                 <tr>
                                                     <th>Publication</th>
                                                     <th>Plateforme</th>
-                                                    <th>Likes</th>
-                                                    <th>Commentaires</th>
-                                                    <th>Partages</th>
-                                                    <th>Vues</th>
-                                                    <th>Taux d'engagement</th>
+                                                    <th class="text-right">Likes</th>
+                                                    <th class="text-right">Commentaires</th>
+                                                    <th class="text-right">Partages</th>
+                                                    <th class="text-right">Vues</th>
+                                                    <th class="text-right">Taux d'engagement</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($verifiedPublications as $pub)
-                                                    @if($pub->latestStats)
-                                                    <tr>
-                                                        <td>
-                                                            <a href="{{ route('publications.show', $pub) }}">
-                                                                #{{ $pub->id }}
-                                                            </a>
-                                                        </td>
-                                                        <td>{{ ucfirst($pub->platform) }}</td>
-                                                        <td>{{ number_format($pub->latestStats->likes) }}</td>
-                                                        <td>{{ number_format($pub->latestStats->comments) }}</td>
-                                                        <td>{{ number_format($pub->latestStats->shares) }}</td>
-                                                        <td>{{ number_format($pub->latestStats->views) }}</td>
-                                                        <td>{{ number_format($pub->latestStats->engagement_rate, 2) }}%</td>
-                                                    </tr>
-                                                    @endif
+                                                <tr>
+                                                    <td><a href="{{ route('publications.show', $pub) }}">#{{ $pub->id }}</a></td>
+                                                    <td>{{ ucfirst($pub->platform) }}</td>
+                                                    <td class="text-right">{{ number_format($pub->latestStats->likes) }}</td>
+                                                    <td class="text-right">{{ number_format($pub->latestStats->comments) }}</td>
+                                                    <td class="text-right">{{ number_format($pub->latestStats->shares) }}</td>
+                                                    <td class="text-right">{{ number_format($pub->latestStats->views ?? 0) }}</td>
+                                                    <td class="text-right">{{ number_format($pub->latestStats->engagement_rate, 2) }} %</td>
+                                                </tr>
                                                 @endforeach
                                             </tbody>
                                         </table>
                                     </div>
                                 @else
-                                    <div class="text-center text-muted py-5">
-                                        <i class="fas fa-chart-bar fa-4x mb-3"></i>
-                                        <p>Les données de performance seront disponibles lorsque l'influenceur aura des publications vérifiées avec des statistiques.</p>
+                                    <div class="text-center text-muted py-4">
+                                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                        <p class="mb-0">Les données de performance apparaîtront lorsque l'ambassadeur aura des publications vérifiées avec des statistiques.</p>
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
-                    <!-- /.tab-pane -->
                 </div>
-                <!-- /.tab-content -->
-            </div><!-- /.card-body -->
+            </div>
         </div>
-        <!-- /.card -->
     </div>
-    <!-- /.col -->
 </div>
-<!-- /.row -->
 @endsection
+
+@push('scripts')
+@if(count($followerChart['datasets']) > 0)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    $(function () {
+        const canvas = document.getElementById('followersChart');
+        if (!canvas || typeof Chart === 'undefined') return;
+        new Chart(canvas, {
+            type: 'line',
+            data: @json($followerChart),
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    });
+</script>
+@endif
+@endpush

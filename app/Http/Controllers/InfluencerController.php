@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Assignment;
 use App\Models\Campaign;
 use App\Models\FollowerSnapshot;
+use App\Models\SocialAccount;
 use App\Models\User;
+use App\Services\InfluencerStatsService;
 use App\Services\SocialAccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +19,10 @@ use Illuminate\Validation\Rule;
 
 class InfluencerController extends Controller
 {
-    public function __construct(private SocialAccountService $socialAccounts) {}
+    public function __construct(
+        private SocialAccountService $socialAccounts,
+        private InfluencerStatsService $stats,
+    ) {}
 
     /**
      * Affiche la liste des influenceurs
@@ -125,43 +130,46 @@ class InfluencerController extends Controller
         // Vérifier les droits d'accès
         Gate::authorize('view', $influencer);
 
-        // Charger les campagnes associées et les publications
-        $influencer->load([
-            'influencerAssignments.campaign',
-            'publications.latestStats',
-            'influencerAssignments.supervisor',
-        ]);
+        $influencer->load('socialAccounts.snapshots');
 
-        // Récupérer les missions (assignments) de l'influencer
-        $assignments = $influencer->influencerAssignments;
-
-        // Récupérer les publications de l'influenceur
-        $publications = $influencer->publications;
-
-        // Calculer les statistiques globales
-        $totalPublications = $publications->count();
-        // Calculer l'engagement total en additionnant les statistiques individuelles
-        $stats = $influencer->publications()
-            ->join('stats', 'publications.id', '=', 'stats.publication_id')
-            ->select('stats.likes', 'stats.comments', 'stats.shares', 'stats.saves')
+        $assignments = $influencer->influencerAssignments()
+            ->with(['campaign', 'supervisor', 'publications.latestStats'])
+            ->orderByDesc('created_at')
             ->get();
 
-        $totalEngagement = $stats->sum('likes') + $stats->sum('comments') + $stats->sum('shares') + $stats->sum('saves');
-        $avgEngagementRate = $influencer->publications()
-            ->join('stats', 'publications.id', '=', 'stats.publication_id')
-            ->avg('stats.engagement_rate') ?? 0;
-        $totalReach = $influencer->publications()
-            ->join('stats', 'publications.id', '=', 'stats.publication_id')
-            ->sum('stats.reach') ?? 0;
+        $publications = $influencer->publications()
+            ->with(['assignment.campaign', 'latestStats'])
+            ->orderByDesc('published_at')
+            ->get();
+
+        $campaignResults = $this->stats->campaignResults($assignments);
+        $campaignTotals = $this->stats->totals($campaignResults);
+        $followerChart = $this->stats->followerChart($influencer);
+
+        // Cartes plateformes dans l'ordre de la config, avec la variation depuis le relevé précédent.
+        $platformOrder = array_keys(config('influboss.platforms'));
+        $platformCards = $influencer->socialAccounts
+            ->sortBy(fn (SocialAccount $account) => array_search($account->platform, $platformOrder, true))
+            ->values()
+            ->map(function (SocialAccount $account) {
+                $previous = $account->snapshots->skip(1)->first();
+
+                return [
+                    'account' => $account,
+                    'delta' => $previous !== null && $account->followers_count !== null
+                        ? $account->followers_count - $previous->followers_count
+                        : null,
+                ];
+            });
 
         return view('influencers.show', compact(
             'influencer',
             'assignments',
             'publications',
-            'totalPublications',
-            'totalEngagement',
-            'avgEngagementRate',
-            'totalReach'
+            'campaignResults',
+            'campaignTotals',
+            'followerChart',
+            'platformCards'
         ));
     }
 
