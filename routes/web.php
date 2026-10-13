@@ -80,6 +80,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/legal-documents/{legalDocument}', [\App\Http\Controllers\LegalDocumentController::class, 'destroy'])
         ->name('legal-documents.destroy');
 
+    // Paiements (droits gérés par PaymentPolicy)
+    Route::get('/payments/export', [\App\Http\Controllers\PaymentController::class, 'export'])
+        ->name('payments.export');
+    Route::get('/payments/{payment}/receipt', [\App\Http\Controllers\PaymentController::class, 'receipt'])
+        ->name('payments.receipt');
+    Route::resource('payments', \App\Http\Controllers\PaymentController::class)->except('show');
+
     // Livrables des missions (droits gérés par DeliverablePolicy)
     Route::post('/assignments/{assignment}/deliverables', [\App\Http\Controllers\DeliverableController::class, 'store'])
         ->name('assignments.deliverables.store');
