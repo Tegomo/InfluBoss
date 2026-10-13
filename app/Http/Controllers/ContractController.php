@@ -75,7 +75,7 @@ class ContractController extends Controller
             $this->attachFile($contract, $request->file('file'));
         }
 
-        $contract->save();
+        $this->saveOrDiscardFile($contract);
 
         return redirect()->route('contracts.show', $contract)->with('success', 'Contrat enregistré.');
     }
@@ -106,14 +106,18 @@ class ContractController extends Controller
         $contract->fill($validated);
         $contract->updated_by = Auth::id();
 
+        $replacedFile = null;
         if ($request->hasFile('file')) {
-            if ($contract->file_path) {
-                Storage::disk(Contract::DISK)->delete($contract->file_path);
-            }
+            $replacedFile = $contract->file_path;
             $this->attachFile($contract, $request->file('file'));
         }
 
-        $contract->save();
+        $this->saveOrDiscardFile($contract);
+
+        // L'ancien fichier n'est supprimé qu'une fois le nouveau enregistré en base.
+        if ($replacedFile) {
+            Storage::disk(Contract::DISK)->delete($replacedFile);
+        }
 
         // Prolongation ou modification de l'échéance : les alertes repartent de zéro.
         if ($previousEndDate !== $contract->end_date->toDateString()) {
@@ -147,6 +151,22 @@ class ContractController extends Controller
             $contract->file_path,
             $contract->file_original_name ?: basename($contract->file_path)
         );
+    }
+
+    /**
+     * Enregistre le contrat ; en cas d'échec, supprime le fichier qui vient d'être déposé pour ne pas
+     * laisser de document orphelin sur le disque privé.
+     */
+    private function saveOrDiscardFile(Contract $contract): void
+    {
+        try {
+            $contract->save();
+        } catch (\Throwable $e) {
+            if ($contract->isDirty('file_path') && $contract->file_path) {
+                Storage::disk(Contract::DISK)->delete($contract->file_path);
+            }
+            throw $e;
+        }
     }
 
     private function attachFile(Contract $contract, UploadedFile $file): void

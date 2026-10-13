@@ -183,6 +183,23 @@ class ContractCrudTest extends TestCase
         $this->assertSame(1, $contract->alerts()->count());
     }
 
+    public function test_uploaded_file_is_removed_when_saving_fails(): void
+    {
+        Contract::creating(fn () => throw new \RuntimeException('Échec SQL simulé'));
+
+        $this->withoutExceptionHandling();
+        try {
+            $this->actingAs($this->admin)->post(route('contracts.store'), $this->payload([
+                'file' => UploadedFile::fake()->create('c.pdf', 20, 'application/pdf'),
+            ]));
+            $this->fail('Une exception était attendue.');
+        } catch (\RuntimeException) {
+            // attendu
+        }
+
+        $this->assertSame([], Storage::disk('local')->allFiles());
+    }
+
     public function test_admin_deletes_contract_softly(): void
     {
         $contract = Contract::factory()->create();
