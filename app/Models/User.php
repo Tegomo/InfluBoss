@@ -70,6 +70,32 @@ class User extends Authenticatable
     }
 
     /**
+     * Contrats de l'influenceur, du plus récent au plus ancien.
+     */
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class, 'influencer_id')->orderByDesc('end_date');
+    }
+
+    /**
+     * Contrat actif le plus récent de l'influenceur.
+     */
+    public function currentContract()
+    {
+        return $this->hasOne(Contract::class, 'influencer_id')
+            ->where('status', Contract::STATUS_ACTIVE)
+            ->latestOfMany('end_date');
+    }
+
+    /**
+     * Documents légaux de l'influenceur (pièce d'identité, RIB…).
+     */
+    public function legalDocuments()
+    {
+        return $this->hasMany(LegalDocument::class, 'influencer_id')->orderBy('type')->orderByDesc('created_at');
+    }
+
+    /**
      * Historique des abonnés, toutes plateformes confondues.
      */
     public function followerSnapshots()

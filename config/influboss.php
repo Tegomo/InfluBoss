@@ -43,6 +43,35 @@ return [
         'linkedin' => ['label' => 'LinkedIn', 'icon' => 'fab fa-linkedin', 'color' => '#0A66C2', 'url_prefix' => 'https://www.linkedin.com/in/'],
     ],
 
+    'contract_types' => [
+        'exclusive' => 'Exclusif',
+        'one_off' => 'Ponctuel',
+        'ambassador' => 'Ambassadeur',
+        'other' => 'Autre',
+    ],
+
+    // Statut => [libellé, couleur de badge Bootstrap]
+    'contract_statuses' => [
+        'negotiation' => ['label' => 'En négociation', 'badge' => 'warning'],
+        'active' => ['label' => 'Actif', 'badge' => 'success'],
+        'expired' => ['label' => 'Expiré', 'badge' => 'secondary'],
+        'terminated' => ['label' => 'Résilié', 'badge' => 'danger'],
+    ],
+
+    // Nombre de jours avant la fin d'un contrat actif auxquels une alerte est envoyée.
+    'contract_alert_days' => [30, 15, 7],
+
+    'legal_document_types' => [
+        'identity' => "Pièce d'identité",
+        'rib' => 'RIB',
+        'tax' => 'Attestation fiscale / NIU',
+        'other' => 'Autre',
+    ],
+
+    // Fichiers joints (contrats, documents légaux) : extensions et taille maximale en Ko.
+    'upload_mimes' => 'pdf,jpg,jpeg,png',
+    'upload_max_kb' => 10240,
+
     // Clés historiques (users.social_links, import CSV) vers les clés actuelles.
     'legacy_platform_keys' => [
         'twitter' => 'x',
