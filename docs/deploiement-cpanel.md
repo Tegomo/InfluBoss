@@ -96,6 +96,24 @@ alertes 30/15/7 jours ne partent pas.
 **Git Version Control > Manage > Pull or Deploy** : cliquer **Update from Remote**, puis
 **Deploy HEAD Commit**. Le journal du déploiement s'affiche dans cPanel (Last Deployment Information).
 
+### 7. Base neuve : créer les comptes de démarrage
+
+Uniquement si la base de production est **vide** (première installation). Dans le Terminal cPanel :
+
+```
+cd /home/<compte>/<dossier-du-site> && /opt/cpanel/ea-php83/root/usr/bin/php artisan db:seed --force
+```
+
+Cela crée quatre comptes : l'administrateur (`super_admin`), le compte Orange en lecture seule (rôle
+`client`) et deux superviseurs. Les adresses par défaut (`admin@`, `orange@`, `superviseur1@`, `superviseur2@`
+`influboss.cm`) se changent avant la commande avec les variables `INFLUBOSS_ADMIN_EMAIL`,
+`INFLUBOSS_CLIENT_EMAIL`, `INFLUBOSS_SUPERVISOR1_EMAIL` et `INFLUBOSS_SUPERVISOR2_EMAIL` dans le `.env`.
+**Les mots de passe générés s'affichent une seule fois** : les noter, les transmettre de façon sûre et les
+faire changer à la première connexion. La commande est sans effet sur un compte déjà existant.
+
+Ne jamais lancer `db:seed --class=DemoSeeder` en production (comptes à mot de passe connu ; la commande refuse
+de toute façon de s'exécuter quand `APP_ENV=production`).
+
 ## Déploiement courant
 
 1. En local : `git push origin master`.
