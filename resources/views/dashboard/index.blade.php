@@ -200,7 +200,9 @@
             </div>
             <!-- /.card-body -->
             <div class="card-footer clearfix">
+                @can('create', \App\Models\Campaign::class)
                 <a href="{{ route('campaigns.create') }}" class="btn btn-sm btn-info float-left">Nouvelle campagne</a>
+                @endcan
                 <a href="{{ route('campaigns.index') }}" class="btn btn-sm btn-secondary float-right">Voir toutes les campagnes</a>
             </div>
             <!-- /.card-footer -->

@@ -62,8 +62,8 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Pour les super_admin et admin, on utilise la vue dashboard.index
-        if ($user->role === 'super_admin' || $user->role === 'admin') {
+        // Pour les super_admin, admin et le client (lecture seule), on utilise la vue d'ensemble dashboard.index
+        if (in_array($user->role, ['super_admin', 'admin', 'client'])) {
             // Activer les scripts pour les graphiques
         $pageScripts = ['dashboard-charts'];
         
