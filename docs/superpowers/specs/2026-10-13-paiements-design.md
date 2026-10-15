@@ -34,3 +34,7 @@ rémunération (`assignments.compensation`). Aucun enregistrement des versements
 ## Hors périmètre
 
 Génération de factures PDF, paiement en ligne, rapprochement bancaire, alertes sur les échéances de paiement.
+
+## Mise à jour du 15/10/2026
+
+Sur demande d Armand : contrats et paiements réservés aux admins (menus, pages, téléchargements, onglets de la fiche). Superviseurs et ambassadeurs n y ont plus accès ; les alertes d expiration ne partent qu aux admins. Le client (Orange) voit uniquement la période du contrat en cours sur la fiche ambassadeur.

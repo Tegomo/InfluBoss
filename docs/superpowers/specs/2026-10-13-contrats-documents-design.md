@@ -49,3 +49,7 @@ Date : 2026-10-13. Statut : décisions prises en autonomie, à relire avec le cl
 
 Paiements effectifs (lot E), signature électronique, alertes sur l'expiration des pièces d'identité (la date
 d'expiration est saisissable et affichée, sans alerte).
+
+## Mise à jour du 15/10/2026
+
+Sur demande d Armand : contrats et paiements réservés aux admins (menus, pages, téléchargements, onglets de la fiche). Superviseurs et ambassadeurs n y ont plus accès ; les alertes d expiration ne partent qu aux admins. Le client (Orange) voit uniquement la période du contrat en cours sur la fiche ambassadeur.
