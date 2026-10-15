@@ -18,7 +18,7 @@ class AssignmentShowInfluencerCardTest extends TestCase
         $influencer = User::factory()->influencer()->create([
             'name' => 'Jane Doe',
             'phone' => '+237699000000',
-            'categories' => ['tech', 'humour'],
+            'categories' => ['business', 'story_tellers'],
         ]);
         SocialAccount::factory()->create(['user_id' => $influencer->id, 'platform' => 'instagram', 'handle' => 'janedoe', 'followers_count' => 1200]);
         SocialAccount::factory()->create(['user_id' => $influencer->id, 'platform' => 'tiktok', 'handle' => 'jane_tok', 'followers_count' => 800]);
@@ -28,7 +28,7 @@ class AssignmentShowInfluencerCardTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Jane Doe')
-            ->assertSee('Tech, Humour')
+            ->assertSee('Business, Story Tellers')
             ->assertSee('2,000')
             ->assertSee('+237699000000')
             ->assertSee('@janedoe')

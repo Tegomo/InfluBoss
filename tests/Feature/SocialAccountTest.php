@@ -74,14 +74,14 @@ class SocialAccountTest extends TestCase
 
     public function test_user_total_followers_and_category_labels(): void
     {
-        $influencer = User::factory()->influencer()->create(['categories' => ['tech', 'zzz']]);
+        $influencer = User::factory()->influencer()->create(['categories' => ['noso', 'zzz']]);
         SocialAccount::factory()->create(['user_id' => $influencer->id, 'platform' => 'instagram', 'followers_count' => 1000]);
         SocialAccount::factory()->create(['user_id' => $influencer->id, 'platform' => 'tiktok', 'followers_count' => 500]);
 
         $influencer->refresh();
 
         $this->assertSame(1500, $influencer->total_followers);
-        $this->assertSame(['Tech'], $influencer->category_labels);
+        $this->assertSame(['NOSO'], $influencer->category_labels);
         $this->assertCount(2, $influencer->socialAccounts);
     }
 

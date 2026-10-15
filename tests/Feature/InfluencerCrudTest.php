@@ -31,7 +31,7 @@ class InfluencerCrudTest extends TestCase
             'phone' => '+237600000000',
             'address' => 'Akwa, rue de la Joie',
             'city' => 'Douala',
-            'categories' => ['tech', 'humour'],
+            'categories' => ['business', 'story_tellers'],
             'password' => 'secret123',
             'password_confirmation' => 'secret123',
             'bio' => 'Créatrice tech',
@@ -53,7 +53,7 @@ class InfluencerCrudTest extends TestCase
         $this->assertSame('janedoe', $influencer->pseudo);
         $this->assertSame('Douala', $influencer->city);
         $this->assertSame('Akwa, rue de la Joie', $influencer->address);
-        $this->assertSame(['tech', 'humour'], $influencer->categories);
+        $this->assertSame(['business', 'story_tellers'], $influencer->categories);
         $this->assertNull($influencer->birthdate);
         $this->assertNull($influencer->social_links);
         $this->assertTrue($influencer->is_active);
@@ -156,13 +156,13 @@ class InfluencerCrudTest extends TestCase
             'email' => $influencer->email,
             'is_active' => '1',
             'address' => 'Bonapriso',
-            'categories' => ['sport'],
+            'categories' => ['noso'],
         ])->assertSessionHasNoErrors();
 
         $fresh = $influencer->fresh();
         $this->assertSame('1990-01-15', $fresh->birthdate->format('Y-m-d'));
         $this->assertSame('Bonapriso', $fresh->address);
-        $this->assertSame(['sport'], $fresh->categories);
+        $this->assertSame(['noso'], $fresh->categories);
     }
 
     public function test_removed_assignment_and_dashboard_routes_return_404(): void

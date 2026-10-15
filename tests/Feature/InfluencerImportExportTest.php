@@ -38,7 +38,7 @@ class InfluencerImportExportTest extends TestCase
     {
         $file = $this->csv(
             ['nom', 'pseudo', 'email', 'telephone', 'adresse', 'ville', 'categories', 'instagram', 'instagram_abonnes', 'twitter', 'actif'],
-            [['Jane Doe', 'janedoe', 'jane@example.com', '+237600000000', 'Akwa', 'Douala', 'Tech|humour', 'https://www.instagram.com/foo', '2500', '@bar', 'Oui']]
+            [['Jane Doe', 'janedoe', 'jane@example.com', '+237600000000', 'Akwa', 'Douala', 'Business|story tellers', 'https://www.instagram.com/foo', '2500', '@bar', 'Oui']]
         );
 
         $response = $this->actingAs($this->admin)->post(route('influencers.import'), ['file' => $file]);
@@ -48,7 +48,7 @@ class InfluencerImportExportTest extends TestCase
 
         $user = User::where('email', 'jane@example.com')->firstOrFail();
         $this->assertSame('influencer', $user->role);
-        $this->assertSame(['tech', 'humour'], $user->categories);
+        $this->assertSame(['business', 'story_tellers'], $user->categories);
         $this->assertSame('Akwa', $user->address);
         $this->assertSame('Douala', $user->city);
         $this->assertTrue($user->is_active);
@@ -113,7 +113,7 @@ class InfluencerImportExportTest extends TestCase
     {
         $influencer = User::factory()->influencer()->create([
             'name' => 'Jane Doe',
-            'categories' => ['tech', 'humour'],
+            'categories' => ['business', 'story_tellers'],
             'address' => 'Akwa',
             'birthdate' => '1990-01-15',
         ]);
@@ -132,7 +132,7 @@ class InfluencerImportExportTest extends TestCase
         $this->assertStringContainsString('Catégories', $content);
         $this->assertStringContainsString('Instagram (URL)', $content);
         $this->assertStringContainsString('Instagram (abonnés)', $content);
-        $this->assertStringContainsString('tech|humour', $content);
+        $this->assertStringContainsString('business|story_tellers', $content);
         $this->assertStringContainsString('https://www.instagram.com/foo', $content);
         $this->assertStringContainsString('2500', $content);
         $this->assertStringNotContainsString('Date de naissance', $content);

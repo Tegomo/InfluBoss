@@ -13,25 +13,16 @@
 
 return [
 
+    // Catégories d'ambassadeurs définies par Orange (clé stockée dans users.categories => libellé affiché).
     'categories' => [
-        'lifestyle' => 'Lifestyle',
-        'humour' => 'Humour',
-        'tech' => 'Tech',
-        'musique' => 'Musique',
-        'mode' => 'Mode',
-        'beaute' => 'Beauté',
-        'sport' => 'Sport',
-        'cuisine' => 'Cuisine',
-        'voyage' => 'Voyage',
-        'gaming' => 'Gaming',
-        'education' => 'Éducation',
-        'business' => 'Business / Entrepreneuriat',
-        'actualite' => 'Actualité / Médias',
-        'divertissement' => 'Divertissement',
-        'famille' => 'Famille / Parentalité',
-        'sante' => 'Santé / Bien-être',
-        'art' => 'Art / Culture',
-        'autre' => 'Autre',
+        'high_level' => 'High Level',
+        'business' => 'Business',
+        'story_tellers' => 'Story Tellers',
+        'noso' => 'NOSO',
+        'anen' => 'ANEN',
+        'orange_money' => 'Orange Money',
+        'pages_populaires' => 'Pages populaires',
+        'lifestyle_mass_market' => 'Lifestyle Mass Market',
     ],
 
     'platforms' => [

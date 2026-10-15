@@ -282,7 +282,7 @@ class InfluencerImportExportController extends Controller
     }
 
     /**
-     * Convertit « Tech|humour » en clés de config ; accepte les clés ou les libellés, sans tenir compte de la casse.
+     * Convertit « Business|story tellers » en clés de config ; accepte les clés ou les libellés, sans tenir compte de la casse.
      *
      * @return array{keys: array<int, string>, unknown: array<int, string>}
      */
@@ -352,7 +352,7 @@ class InfluencerImportExportController extends Controller
      */
     private function templateExampleRow(): array
     {
-        $row = ['Nom Ambassadeur', 'pseudo_ambassadeur', 'email@exemple.com', '+237600000000', 'Akwa, Douala', 'Douala', 'lifestyle|tech'];
+        $row = ['Nom Ambassadeur', 'pseudo_ambassadeur', 'email@exemple.com', '+237600000000', 'Akwa, Douala', 'Douala', 'lifestyle_mass_market|orange_money'];
         foreach (config('influboss.platforms') as $cfg) {
             $row[] = $cfg['url_prefix'].'pseudo_ambassadeur';
             $row[] = '12000';

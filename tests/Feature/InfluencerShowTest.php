@@ -27,7 +27,7 @@ class InfluencerShowTest extends TestCase
     public function test_show_displays_categories_address_and_platform_cards(): void
     {
         $influencer = User::factory()->influencer()->create([
-            'categories' => ['tech', 'humour'],
+            'categories' => ['business', 'story_tellers'],
             'address' => 'Akwa, rue de la Joie',
         ]);
         SocialAccount::factory()->create(['user_id' => $influencer->id, 'platform' => 'instagram', 'handle' => 'janedoe'])
@@ -36,8 +36,8 @@ class InfluencerShowTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('influencers.show', $influencer));
 
         $response->assertOk()
-            ->assertSee('Tech')
-            ->assertSee('Humour')
+            ->assertSee('Business')
+            ->assertSee('Story Tellers')
             ->assertSee('Akwa, rue de la Joie')
             ->assertSee('Instagram')
             ->assertSee('@janedoe')

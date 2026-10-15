@@ -21,8 +21,8 @@ class InfluencerIndexTest extends TestCase
     {
         parent::setUp();
         $this->admin = User::factory()->admin()->create();
-        $this->alice = User::factory()->influencer()->create(['name' => 'Alice Techno', 'pseudo' => 'zebra_queen', 'categories' => ['tech']]);
-        $this->bob = User::factory()->influencer()->create(['name' => 'Bob Sportif', 'pseudo' => 'bobby', 'categories' => ['sport']]);
+        $this->alice = User::factory()->influencer()->create(['name' => 'Alice Techno', 'pseudo' => 'zebra_queen', 'categories' => ['high_level']]);
+        $this->bob = User::factory()->influencer()->create(['name' => 'Bob Sportif', 'pseudo' => 'bobby', 'categories' => ['anen']]);
         SocialAccount::factory()->create(['user_id' => $this->alice->id, 'platform' => 'tiktok', 'followers_count' => 500]);
         SocialAccount::factory()->create(['user_id' => $this->alice->id, 'platform' => 'instagram', 'followers_count' => 1000]);
         SocialAccount::factory()->create(['user_id' => $this->bob->id, 'platform' => 'instagram', 'followers_count' => 20]);
@@ -30,7 +30,7 @@ class InfluencerIndexTest extends TestCase
 
     public function test_filter_by_category(): void
     {
-        $this->actingAs($this->admin)->get(route('influencers.index', ['category' => 'tech']))
+        $this->actingAs($this->admin)->get(route('influencers.index', ['category' => 'high_level']))
             ->assertOk()
             ->assertSee('Alice Techno')
             ->assertDontSee('Bob Sportif');
@@ -49,8 +49,8 @@ class InfluencerIndexTest extends TestCase
         $this->actingAs($this->admin)->get(route('influencers.index'))
             ->assertOk()
             ->assertSee('1,500')
-            ->assertSee('Tech')
-            ->assertSee('Sport');
+            ->assertSee('High Level')
+            ->assertSee('ANEN');
     }
 
     public function test_search_matches_pseudo(): void
