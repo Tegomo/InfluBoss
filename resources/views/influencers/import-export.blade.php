@@ -104,7 +104,7 @@
                     <li><strong>actif</strong> : statut (optionnel, « Oui » ou « Non », par défaut « Non »)</li>
                 </ul>
                 <p class="alert alert-info mb-0">
-                    <i class="fas fa-info-circle mr-1"></i> Un mot de passe temporaire est généré pour chaque ambassadeur importé. Les nombres d'abonnés fournis sont enregistrés comme premier relevé de l'historique.
+                    <i class="fas fa-info-circle mr-1"></i> Chaque ambassadeur importé reçoit le mot de passe par défaut <code>{{ config('influboss.default_influencer_password') }}</code>. Les nombres d'abonnés fournis sont enregistrés comme premier relevé de l'historique.
                 </p>
             </div>
         </div>

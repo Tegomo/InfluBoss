@@ -107,14 +107,14 @@ class ContractCrudTest extends TestCase
         $unlinked = User::factory()->supervisor()->create();
         $otherInfluencer = User::factory()->influencer()->create();
 
-        foreach ([$this->admin, $linked, $this->influencer] as $user) {
-            $this->actingAs($user)->get(route('contracts.show', $contract))->assertOk()->assertSee('Jane Doe');
-            $this->actingAs($user)->get(route('contracts.download', $contract))
-                ->assertOk()
-                ->assertDownload('contrat.pdf');
-        }
+        $this->actingAs($this->admin)->get(route('contracts.show', $contract))->assertOk()->assertSee('Jane Doe');
+        $this->actingAs($this->admin)->get(route('contracts.download', $contract))
+            ->assertOk()
+            ->assertDownload('contrat.pdf');
 
-        foreach ([$unlinked, $otherInfluencer] as $user) {
+        // Contrats réservés aux admins : ni superviseur (même lié), ni l'ambassadeur, ni le client.
+        $client = User::factory()->create(['role' => 'client']);
+        foreach ([$linked, $this->influencer, $unlinked, $otherInfluencer, $client] as $user) {
             $this->actingAs($user)->get(route('contracts.show', $contract))->assertForbidden();
             $this->actingAs($user)->get(route('contracts.download', $contract))->assertForbidden();
         }
@@ -142,11 +142,8 @@ class ContractCrudTest extends TestCase
         $this->actingAs($this->admin)->get(route('contracts.index', ['expiring' => 1]))
             ->assertOk()->assertSee('Jane Doe')->assertDontSee('Bob Other');
 
-        $this->actingAs($supervisor)->get(route('contracts.index'))
-            ->assertOk()->assertSee('Jane Doe')->assertDontSee('Bob Other');
-
-        $this->actingAs($other)->get(route('contracts.index'))
-            ->assertOk()->assertSee('Bob Other')->assertDontSee('Jane Doe');
+        $this->actingAs($supervisor)->get(route('contracts.index'))->assertForbidden();
+        $this->actingAs($other)->get(route('contracts.index'))->assertForbidden();
     }
 
     public function test_changing_end_date_resets_alerts_and_replacing_file_deletes_old_one(): void

@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', auth()->user()->role === 'influencer' ? 'Mes contrats' : 'Contrats')
+@section('title', 'Contrats')
 
 @section('breadcrumb')
 <li class="breadcrumb-item active">Contrats</li>

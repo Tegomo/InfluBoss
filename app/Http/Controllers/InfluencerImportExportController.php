@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -261,7 +260,7 @@ class InfluencerImportExportController extends Controller
                     'name' => $row['nom'] ?? '',
                     'pseudo' => ($row['pseudo'] ?? '') !== '' ? $row['pseudo'] : null,
                     'email' => $email,
-                    'password' => Hash::make(Str::random(12)),
+                    'password' => Hash::make(config('influboss.default_influencer_password')),
                     'role' => 'influencer',
                     'phone' => ($row['telephone'] ?? '') !== '' ? $row['telephone'] : null,
                     'address' => ($row['adresse'] ?? '') !== '' ? $row['adresse'] : null,

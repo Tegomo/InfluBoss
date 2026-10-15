@@ -76,17 +76,13 @@ final class ContractExpiryService
     }
 
     /**
-     * Admins et super_admins actifs, plus les superviseurs actifs liés à l'influenceur.
+     * Admins et super_admins actifs (les contrats leur sont réservés).
      *
      * @return Collection<int, User>
      */
     private function recipientsFor(Contract $contract): Collection
     {
-        $admins = User::whereIn('role', ['admin', 'super_admin'])->where('is_active', true)->get();
-        $supervisors = $contract->influencer
-            ? $contract->influencer->supervisors()->where('is_active', true)->get()
-            : collect();
-
-        return $admins->concat($supervisors)->unique('id')->values();
+        // Les contrats sont réservés aux admins : eux seuls reçoivent les alertes.
+        return User::whereIn('role', ['admin', 'super_admin'])->where('is_active', true)->get();
     }
 }

@@ -102,17 +102,11 @@ class Contract extends Model
     }
 
     /**
-     * Contrats visibles par un utilisateur : tout pour les admins, ceux des influenceurs liés pour un
-     * superviseur, les siens pour un influenceur.
+     * Contrats visibles par un utilisateur : tous pour les admins et super_admins, aucun pour les autres rôles.
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return match ($user->role) {
-            'admin', 'super_admin' => $query,
-            'supervisor' => $query->whereIn('influencer_id', $user->influencers()->pluck('users.id')),
-            'influencer' => $query->where('influencer_id', $user->id),
-            default => $query->whereRaw('1 = 0'),
-        };
+        return in_array($user->role, ['admin', 'super_admin'], true) ? $query : $query->whereRaw('1 = 0');
     }
 
     public function getTypeLabelAttribute(): string

@@ -60,7 +60,7 @@ class PaymentModelTest extends TestCase
         $b = Payment::factory()->create();
 
         $this->assertEqualsCanonicalizing([$a->id, $b->id], Payment::visibleTo($admin)->pluck('id')->all());
-        $this->assertSame([$a->id], Payment::visibleTo($mine)->pluck('id')->all());
+        $this->assertSame([], Payment::visibleTo($mine)->pluck('id')->all());
         $this->assertSame([], Payment::visibleTo($supervisor)->pluck('id')->all());
     }
 

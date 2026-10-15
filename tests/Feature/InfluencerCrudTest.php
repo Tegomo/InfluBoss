@@ -6,6 +6,7 @@ use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -32,8 +33,6 @@ class InfluencerCrudTest extends TestCase
             'address' => 'Akwa, rue de la Joie',
             'city' => 'Douala',
             'categories' => ['business', 'story_tellers'],
-            'password' => 'secret123',
-            'password_confirmation' => 'secret123',
             'bio' => 'Créatrice tech',
             'social' => [
                 'instagram' => ['url' => 'https://www.instagram.com/janedoe', 'followers' => '1500'],
@@ -57,6 +56,7 @@ class InfluencerCrudTest extends TestCase
         $this->assertNull($influencer->birthdate);
         $this->assertNull($influencer->social_links);
         $this->assertTrue($influencer->is_active);
+        $this->assertTrue(Hash::check('Pass@2026', $influencer->password), 'mot de passe par défaut');
 
         $accounts = $influencer->socialAccounts()->get()->keyBy('platform');
         $this->assertCount(2, $accounts);
@@ -189,7 +189,10 @@ class InfluencerCrudTest extends TestCase
             ->assertOk()
             ->assertSee('Catégories')
             ->assertSee('name="address"', false)
-            ->assertDontSee('name="birthdate"', false);
+            ->assertDontSee('name="birthdate"', false)
+            ->assertDontSee('name="password"', false)
+            ->assertDontSee('name="password_confirmation"', false)
+            ->assertSee('Pass@2026');
 
         $this->actingAs($this->admin)->get(route('influencers.edit', $influencer))
             ->assertOk()

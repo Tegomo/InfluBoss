@@ -82,7 +82,9 @@ class InfluencerController extends Controller
         // Seuls les admin et super admin peuvent créer des influenceurs
         Gate::authorize('create', User::class);
 
-        return view('influencers.create', $this->formData());
+        return view('influencers.create', $this->formData() + [
+            'defaultPassword' => config('influboss.default_influencer_password'),
+        ]);
     }
 
     /**
@@ -96,7 +98,7 @@ class InfluencerController extends Controller
         $validated = $request->validate($this->rules(), $this->messages());
 
         $attributes = $this->profileAttributes($validated) + [
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make(config('influboss.default_influencer_password')),
             'role' => 'influencer',
             'is_active' => true,
         ];
@@ -158,13 +160,19 @@ class InfluencerController extends Controller
                 ];
             });
 
-        // Contrats visibles par l'utilisateur (un superviseur non lié ne voit rien) et documents légaux
-        // (admins et l'influenceur lui-même uniquement).
-        $contracts = Contract::visibleTo(Auth::user())
-            ->where('influencer_id', $influencer->id)
-            ->orderByDesc('end_date')
-            ->get();
-        $currentContract = $contracts->firstWhere('status', Contract::STATUS_ACTIVE);
+        // Contrats : réservés aux admins. Le client voit seulement la période du contrat en cours.
+        $canSeeContracts = Gate::allows('viewAny', Contract::class);
+        $contracts = $canSeeContracts
+            ? $influencer->contracts()->get()
+            : collect();
+        $currentContract = $canSeeContracts
+            ? $contracts->firstWhere('status', Contract::STATUS_ACTIVE)
+            : null;
+        $contractPeriod = Auth::user()->isClient()
+            ? $influencer->currentContract()->first(['id', 'influencer_id', 'start_date', 'end_date', 'status'])
+            : null;
+
+        // Documents légaux : admins et l'influenceur lui-même uniquement.
         $canSeeDocuments = Gate::allows('viewAny', [LegalDocument::class, $influencer]);
         $legalDocuments = $canSeeDocuments ? $influencer->legalDocuments()->with('uploader')->get() : collect();
 
@@ -181,8 +189,10 @@ class InfluencerController extends Controller
             'campaignTotals',
             'followerChart',
             'platformCards',
+            'canSeeContracts',
             'contracts',
             'currentContract',
+            'contractPeriod',
             'canSeeDocuments',
             'legalDocuments',
             'canSeePayments',
@@ -343,7 +353,8 @@ class InfluencerController extends Controller
             'city' => 'nullable|string|max:255',
             'categories' => 'nullable|array',
             'categories.*' => ['string', Rule::in(array_keys(config('influboss.categories')))],
-            'password' => ($influencer ? 'nullable' : 'required').'|string|min:8|confirmed',
+            // Pas de mot de passe à la création : le mot de passe par défaut est attribué (config influboss).
+            'password' => $influencer ? 'nullable|string|min:8|confirmed' : 'exclude',
             'bio' => 'nullable|string',
             'profile_photo' => 'nullable|image|max:2048',
             'is_active' => 'nullable|boolean',

@@ -80,7 +80,16 @@ class ContractsUiTest extends TestCase
     public function test_menu_entry_by_role(): void
     {
         $this->actingAs($this->admin)->get(route('contracts.index'))->assertSee('<p>Contrats</p>', false);
-        $this->actingAs($this->influencer)->get(route('contracts.index'))->assertSee('<p>Mes contrats</p>', false);
+
+        // Menus Contrats et Paiements réservés aux admins.
+        $supervisor = User::factory()->supervisor()->create();
+        $client = User::factory()->create(['role' => 'client']);
+        foreach ([$this->influencer, $supervisor, $client] as $user) {
+            $this->actingAs($user)->get(route('campaigns.index'))
+                ->assertOk()
+                ->assertDontSee(route('contracts.index'), false)
+                ->assertDontSee(route('payments.index'), false);
+        }
     }
 
     public function test_admin_sees_contracts_and_documents_tabs_on_profile(): void
@@ -100,7 +109,7 @@ class ContractsUiTest extends TestCase
             ->assertSee('Contrat en cours');
     }
 
-    public function test_linked_supervisor_sees_contracts_but_not_documents(): void
+    public function test_linked_supervisor_sees_neither_contracts_nor_documents(): void
     {
         $supervisor = User::factory()->supervisor()->create();
         $supervisor->influencers()->attach($this->influencer->id);
@@ -109,10 +118,48 @@ class ContractsUiTest extends TestCase
 
         $this->actingAs($supervisor)->get(route('influencers.show', $this->influencer))
             ->assertOk()
-            ->assertSee('Exclusif')
+            ->assertDontSee('href="#contracts"', false)
+            ->assertDontSee('Exclusif')
+            ->assertDontSee('Contrat en cours')
             ->assertDontSee('href="#documents"', false)
-            ->assertDontSee('cni-jane.pdf')
-            ->assertDontSee(route('contracts.create', ['influencer' => $this->influencer->id]), false);
+            ->assertDontSee('cni-jane.pdf');
+    }
+
+    public function test_client_sees_only_the_current_contract_period(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        Contract::factory()->create([
+            'influencer_id' => $this->influencer->id,
+            'type' => 'exclusive',
+            'status' => 'active',
+            'start_date' => '2026-01-15',
+            'end_date' => '2027-01-14',
+            'amount' => 750000,
+            'payment_terms' => 'Clause confidentielle',
+        ]);
+
+        $this->actingAs($client)->get(route('influencers.show', $this->influencer))
+            ->assertOk()
+            ->assertSee('Période de contrat')
+            ->assertSee('15/01/2026')
+            ->assertSee('14/01/2027')
+            ->assertDontSee('href="#contracts"', false)
+            ->assertDontSee('Exclusif')
+            ->assertDontSee('750 000')
+            ->assertDontSee('Clause confidentielle')
+            ->assertDontSee(route('contracts.index'), false);
+    }
+
+    public function test_client_sees_no_period_without_active_contract(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        Contract::factory()->create(['influencer_id' => $this->influencer->id, 'status' => 'expired', 'start_date' => '2024-01-01', 'end_date' => '2024-12-31']);
+
+        $this->actingAs($client)->get(route('influencers.show', $this->influencer))
+            ->assertOk()
+            ->assertSee('Période de contrat')
+            ->assertSee('Aucun contrat en cours')
+            ->assertDontSee('31/12/2024');
     }
 
     public function test_influencer_sees_own_documents_without_upload_form(): void

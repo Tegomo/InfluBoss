@@ -53,6 +53,7 @@ class InfluencerImportExportTest extends TestCase
         $this->assertSame('Douala', $user->city);
         $this->assertTrue($user->is_active);
         $this->assertNull($user->birthdate);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('Pass@2026', $user->password), 'mot de passe par défaut');
 
         $accounts = $user->socialAccounts()->get()->keyBy('platform');
         $this->assertCount(2, $accounts);

@@ -148,7 +148,7 @@
                     <li class="nav-item">
                         <a href="{{ route('contracts.index') }}" class="nav-link {{ request()->routeIs('contracts.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-file-signature"></i>
-                            <p>{{ Auth::user()->role === 'influencer' ? 'Mes contrats' : 'Contrats' }}</p>
+                            <p>Contrats</p>
                         </a>
                     </li>
                     @endcan
@@ -157,7 +157,7 @@
                     <li class="nav-item">
                         <a href="{{ route('payments.index') }}" class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-money-bill-wave"></i>
-                            <p>{{ Auth::user()->role === 'influencer' ? 'Mes paiements' : 'Paiements' }}</p>
+                            <p>Paiements</p>
                         </a>
                     </li>
                     @endcan

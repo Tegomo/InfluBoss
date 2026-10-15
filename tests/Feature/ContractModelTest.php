@@ -72,8 +72,8 @@ class ContractModelTest extends TestCase
         $b = Contract::factory()->create(['influencer_id' => $other->id]);
 
         $this->assertEqualsCanonicalizing([$a->id, $b->id], Contract::visibleTo($admin)->pluck('id')->all());
-        $this->assertSame([$a->id], Contract::visibleTo($supervisor)->pluck('id')->all());
-        $this->assertSame([$a->id], Contract::visibleTo($mine)->pluck('id')->all());
+        $this->assertSame([], Contract::visibleTo($supervisor)->pluck('id')->all());
+        $this->assertSame([], Contract::visibleTo($mine)->pluck('id')->all());
     }
 
     public function test_user_relations_and_current_contract(): void

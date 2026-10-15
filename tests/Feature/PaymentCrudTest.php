@@ -100,10 +100,10 @@ class PaymentCrudTest extends TestCase
         $mine = Payment::factory()->create(['influencer_id' => $this->influencer->id, 'label' => 'Mon paiement']);
         Payment::factory()->create(['label' => 'Paiement d\'un autre']);
 
+        // Paiements réservés aux admins.
         $this->actingAs($supervisor)->get(route('payments.index'))->assertForbidden();
-
-        $this->actingAs($this->influencer)->get(route('payments.index'))
-            ->assertOk()->assertSee('Mon paiement')->assertDontSee('Paiement d&#039;un autre', false);
+        $this->actingAs($this->influencer)->get(route('payments.index'))->assertForbidden();
+        $this->actingAs(User::factory()->create(['role' => 'client']))->get(route('payments.index'))->assertForbidden();
 
         $this->actingAs($this->influencer)->get(route('payments.create'))->assertForbidden();
         $this->actingAs($this->influencer)->post(route('payments.store'), $this->payload())->assertForbidden();
@@ -178,7 +178,7 @@ class PaymentCrudTest extends TestCase
         $supervisor->influencers()->attach($this->influencer->id);
 
         $this->actingAs($this->admin)->get(route('payments.receipt', $payment))->assertOk()->assertDownload('recu.pdf');
-        $this->actingAs($this->influencer)->get(route('payments.receipt', $payment))->assertOk();
+        $this->actingAs($this->influencer)->get(route('payments.receipt', $payment))->assertForbidden();
         $this->actingAs($supervisor)->get(route('payments.receipt', $payment))->assertForbidden();
         $this->actingAs(User::factory()->influencer()->create())->get(route('payments.receipt', $payment))->assertForbidden();
     }
@@ -200,7 +200,7 @@ class PaymentCrudTest extends TestCase
     public function test_menu_entry(): void
     {
         $this->actingAs($this->admin)->get(route('payments.index'))->assertSee('<p>Paiements</p>', false);
-        $this->actingAs($this->influencer)->get(route('payments.index'))->assertSee('<p>Mes paiements</p>', false);
+        $this->actingAs($this->influencer)->get(route('campaigns.index'))->assertDontSee('<p>Mes paiements</p>', false);
         $supervisor = User::factory()->supervisor()->create();
         $this->actingAs($supervisor)->get(route('contracts.index'))->assertDontSee('<p>Paiements</p>', false);
     }

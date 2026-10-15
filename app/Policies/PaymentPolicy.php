@@ -6,19 +6,18 @@ use App\Models\Payment;
 use App\Models\User;
 
 /**
- * Paiements (données financières) : les admins gèrent tout ; l'influenceur consulte les siens.
- * Les superviseurs n'y ont pas accès.
+ * Paiements (données financières) : réservés aux admins et super_admins.
  */
 class PaymentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['super_admin', 'admin', 'influencer']);
+        return $this->isAdmin($user);
     }
 
     public function view(User $user, Payment $payment): bool
     {
-        return $this->isAdmin($user) || ($user->role === 'influencer' && $user->id === $payment->influencer_id);
+        return $this->isAdmin($user);
     }
 
     public function downloadReceipt(User $user, Payment $payment): bool

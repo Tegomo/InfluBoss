@@ -6,23 +6,19 @@ use App\Models\Contract;
 use App\Models\User;
 
 /**
- * Admins : gestion complète. Superviseurs liés et influenceur concerné : consultation et téléchargement.
+ * Contrats : réservés aux admins et super_admins (consultation, téléchargement et gestion).
+ * Le client ne voit que la période du contrat en cours, sur la fiche ambassadeur (sans passer par cette policy).
  */
 class ContractPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['super_admin', 'admin', 'supervisor', 'influencer']);
+        return $this->isAdmin($user);
     }
 
     public function view(User $user, Contract $contract): bool
     {
-        return match ($user->role) {
-            'super_admin', 'admin' => true,
-            'supervisor' => $user->influencers()->whereKey($contract->influencer_id)->exists(),
-            'influencer' => $user->id === $contract->influencer_id,
-            default => false,
-        };
+        return $this->isAdmin($user);
     }
 
     public function download(User $user, Contract $contract): bool

@@ -86,11 +86,7 @@ class Payment extends Model
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return match ($user->role) {
-            'admin', 'super_admin' => $query,
-            'influencer' => $query->where('influencer_id', $user->id),
-            default => $query->whereRaw('1 = 0'),
-        };
+        return in_array($user->role, ['admin', 'super_admin'], true) ? $query : $query->whereRaw('1 = 0');
     }
 
     /**

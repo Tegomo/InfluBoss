@@ -96,6 +96,9 @@ return [
     'upload_mimes' => 'pdf,jpg,jpeg,png',
     'upload_max_kb' => 10240,
 
+    // Mot de passe attribué à un ambassadeur créé depuis le formulaire ou importé en CSV (pas de champ mot de passe).
+    'default_influencer_password' => env('INFLUBOSS_DEFAULT_INFLUENCER_PASSWORD', 'Pass@2026'),
+
     // Comptes créés à l'initialisation de la base (InitialAccountsSeeder). Adresses modifiables par variables d'environnement.
     'initial_accounts' => [
         ['role' => 'super_admin', 'name' => 'Administrateur McCANN', 'email' => env('INFLUBOSS_ADMIN_EMAIL', 'admin@influboss.cm')],

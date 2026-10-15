@@ -45,14 +45,10 @@ class PaymentIntegrationTest extends TestCase
             ->assertSee(e(route('payments.create', ['contract' => $this->contract->id])), false);
     }
 
-    public function test_contract_page_hides_payments_from_supervisor_and_add_link_from_influencer(): void
+    public function test_contract_page_is_admin_only(): void
     {
-        $this->actingAs($this->supervisor)->get(route('contracts.show', $this->contract))
-            ->assertOk()->assertDontSee('id="payments"', false)->assertDontSee('Acompte signature');
-
-        $this->actingAs($this->influencer)->get(route('contracts.show', $this->contract))
-            ->assertOk()->assertSee('Acompte signature')
-            ->assertDontSee(e(route('payments.create', ['contract' => $this->contract->id])), false);
+        $this->actingAs($this->supervisor)->get(route('contracts.show', $this->contract))->assertForbidden();
+        $this->actingAs($this->influencer)->get(route('contracts.show', $this->contract))->assertForbidden();
     }
 
     public function test_influencer_profile_payments_tab(): void
@@ -67,8 +63,7 @@ class PaymentIntegrationTest extends TestCase
             ->assertOk()->assertDontSee('href="#payments"', false)->assertDontSee('Solde fin');
 
         $this->actingAs($this->influencer)->get(route('influencers.show', $this->influencer))
-            ->assertOk()->assertSee('href="#payments"', false)->assertSee('Solde fin')
-            ->assertDontSee(e(route('payments.create', ['influencer' => $this->influencer->id])), false);
+            ->assertOk()->assertDontSee('href="#payments"', false)->assertDontSee('Solde fin');
     }
 
     public function test_create_form_prefilled_from_contract(): void

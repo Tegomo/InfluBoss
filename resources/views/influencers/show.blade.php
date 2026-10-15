@@ -71,6 +71,7 @@ Ambassadeur : {{ $influencer->name }}
                     <li class="list-group-item">
                         <b>Missions</b> <a class="float-right">{{ $assignments->count() }}</a>
                     </li>
+                    @if($canSeeContracts)
                     <li class="list-group-item">
                         <b>Contrat en cours</b>
                         <span class="float-right text-right">
@@ -83,6 +84,19 @@ Ambassadeur : {{ $influencer->name }}
                             @endif
                         </span>
                     </li>
+                    @elseif(auth()->user()->isClient())
+                    {{-- Le client voit uniquement la période du contrat en cours. --}}
+                    <li class="list-group-item">
+                        <b>Période de contrat</b>
+                        <span class="float-right text-right">
+                            @if($contractPeriod)
+                                du {{ $contractPeriod->start_date->format('d/m/Y') }} au {{ $contractPeriod->end_date->format('d/m/Y') }}
+                            @else
+                                <span class="text-muted">Aucun contrat en cours</span>
+                            @endif
+                        </span>
+                    </li>
+                    @endif
                     <li class="list-group-item">
                         <b>Statut</b>
                         <span class="float-right">
@@ -189,7 +203,9 @@ Ambassadeur : {{ $influencer->name }}
             <div class="card-header p-2">
                 <ul class="nav nav-pills">
                     <li class="nav-item"><a class="nav-link active" href="#campaigns" data-toggle="tab">Campagnes</a></li>
+                    @if($canSeeContracts)
                     <li class="nav-item"><a class="nav-link" href="#contracts" data-toggle="tab">Contrats <span class="badge badge-light">{{ $contracts->count() }}</span></a></li>
+                    @endif
                     @if($canSeeDocuments)
                     <li class="nav-item"><a class="nav-link" href="#documents" data-toggle="tab">Documents <span class="badge badge-light">{{ $legalDocuments->count() }}</span></a></li>
                     @endif
@@ -286,7 +302,8 @@ Ambassadeur : {{ $influencer->name }}
                         @endif
                     </div>
 
-                    {{-- Contrats --}}
+                    {{-- Contrats (admins uniquement) --}}
+                    @if($canSeeContracts)
                     <div class="tab-pane" id="contracts">
                         @can('create', \App\Models\Contract::class)
                         <div class="text-right mb-2">
@@ -335,6 +352,7 @@ Ambassadeur : {{ $influencer->name }}
                         <div class="alert alert-info mb-0">Aucun contrat enregistré pour cet ambassadeur.</div>
                         @endif
                     </div>
+                    @endif
 
                     {{-- Documents légaux (admins et l'ambassadeur lui-même) --}}
                     @if($canSeeDocuments)

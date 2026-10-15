@@ -77,17 +77,10 @@ Ajouter un nouvel ambassadeur
                                 <div class="text-danger small">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group">
-                                <label for="password">Mot de passe</label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Mot de passe" autocomplete="new-password" required>
-                                @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label for="password_confirmation">Confirmer le mot de passe</label>
-                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Confirmer le mot de passe" autocomplete="new-password" required>
-                            </div>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-key mr-1"></i>
+                                Le compte est créé avec le mot de passe par défaut <code>{{ $defaultPassword }}</code>, à transmettre à l'ambassadeur.
+                            </p>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">

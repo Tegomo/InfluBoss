@@ -49,7 +49,7 @@ class ContractExpiryTest extends TestCase
         return $contract->alerts()->orderBy('days_before')->pluck('days_before')->all();
     }
 
-    public function test_alert_goes_to_admins_and_linked_supervisors_only(): void
+    public function test_alert_goes_to_active_admins_only(): void
     {
         Notification::fake();
         $inactiveAdmin = User::factory()->admin()->create(['is_active' => false]);
@@ -58,11 +58,15 @@ class ContractExpiryTest extends TestCase
         $this->artisan('contracts:check-expirations')->assertSuccessful();
 
         Notification::assertSentTo(
-            [$this->admin, $this->superAdmin, $this->linkedSupervisor],
+            [$this->admin, $this->superAdmin],
             ContractExpiringNotification::class,
             fn ($notification) => $notification->contract->is($contract) && $notification->daysRemaining === 25
         );
-        Notification::assertNotSentTo([$this->otherSupervisor, $this->influencer, $inactiveAdmin], ContractExpiringNotification::class);
+        // Les contrats sont réservés aux admins : superviseurs et ambassadeur ne sont pas prévenus.
+        Notification::assertNotSentTo(
+            [$this->linkedSupervisor, $this->otherSupervisor, $this->influencer, $inactiveAdmin],
+            ContractExpiringNotification::class
+        );
         $this->assertSame([30], $this->sentThresholds($contract));
     }
 
