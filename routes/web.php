@@ -191,6 +191,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
         Route::get('/statistics/export-pdf', [StatisticsController::class, 'exportPdf'])->name('statistics.export-pdf');
         Route::get('/statistics/export-raw-data', [StatisticsController::class, 'exportRawData'])->name('statistics.export-raw-data');
+        Route::get('/statistics/export-engagement', [StatisticsController::class, 'exportEngagement'])->name('statistics.export-engagement');
+        Route::get('/statistics/export-publications', [StatisticsController::class, 'exportPublications'])->name('statistics.export-publications');
+        Route::get('/statistics/export-top-influencers', [StatisticsController::class, 'exportTopInfluencers'])->name('statistics.export-top-influencers');
+        Route::get('/statistics/export-top-supervisors', [StatisticsController::class, 'exportTopSupervisors'])->name('statistics.export-top-supervisors');
 
         // Export global de toutes les données (admins uniquement : le client n'a accès qu'aux statistiques)
         Route::get('/export-all', [GlobalExportController::class, 'exportAll'])
