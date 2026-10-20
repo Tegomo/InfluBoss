@@ -42,7 +42,7 @@
                                             <option value="{{ $assignment->id }}" {{ old('assignment_id') == $assignment->id || request('assignment_id') == $assignment->id ? 'selected' : '' }}
                                                 data-influencer-id="{{ $assignment->influencer_id }}"
                                                 data-campaign-id="{{ $assignment->campaign_id }}">
-                                                Mission #{{ $assignment->id }} - {{ $assignment->campaign->name ?? 'N/A' }} 
+                                                {{ $assignment->title }} - {{ $assignment->campaign->name ?? 'N/A' }}
                                                 ({{ $assignment->influencer->name ?? 'N/A' }})
                                             </option>
                                         @endforeach

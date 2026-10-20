@@ -138,7 +138,7 @@
                                             <td>Mission:</td>
                                             <td>
                                                 <a href="{{ route('assignments.show', $publication->assignment) }}">
-                                                    Mission #{{ $publication->assignment->id }} - {{ $publication->assignment->campaign->name ?? 'N/A' }} ({{ $publication->assignment->influencer->name ?? 'N/A' }})
+                                                    {{ $publication->assignment->title }} - {{ $publication->assignment->campaign->name ?? 'N/A' }} ({{ $publication->assignment->influencer->name ?? 'N/A' }})
                                                 </a>
                                             </td>
                                         </tr>

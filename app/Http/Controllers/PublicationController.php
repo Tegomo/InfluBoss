@@ -146,7 +146,7 @@ class PublicationController extends Controller
         if ($user->role === 'influencer') {
             // Pour les influenceurs : uniquement leurs propres assignations actives
             $assignments = Assignment::where('influencer_id', Auth::id())
-                ->with('campaign')
+                ->with(['campaign', 'content'])
                 ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         } elseif ($user->role === 'supervisor') {
@@ -160,12 +160,12 @@ class PublicationController extends Controller
                     $query->where('supervisor_id', Auth::id())
                           ->orWhereIn('influencer_id', $influencerIds);
                 })
-                ->with(['campaign', 'influencer'])
+                ->with(['campaign', 'content', 'influencer'])
                 ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         } elseif (in_array($user->role, ['admin', 'super_admin'])) {
             // Pour les admins : toutes les assignations actives
-            $assignments = Assignment::with(['campaign', 'influencer', 'supervisor'])
+            $assignments = Assignment::with(['campaign', 'content', 'influencer', 'supervisor'])
                 ->whereIn('status', ['accepted', 'in_progress'])
                 ->get();
         }
@@ -379,18 +379,18 @@ class PublicationController extends Controller
         if ($user->role === 'influencer') {
             // Pour les influenceurs : uniquement leurs propres assignations
             $assignments = Assignment::where('influencer_id', Auth::id())
-                ->with('campaign')
+                ->with(['campaign', 'content'])
                 ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         } elseif ($user->role === 'supervisor') {
             // Pour les superviseurs : les assignations qu'ils supervisent
             $assignments = Assignment::where('supervisor_id', Auth::id())
-                ->with(['campaign', 'influencer'])
+                ->with(['campaign', 'content', 'influencer'])
                 ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         } elseif (in_array($user->role, ['admin', 'super_admin'])) {
             // Pour les admins : toutes les assignations
-            $assignments = Assignment::with(['campaign', 'influencer', 'supervisor'])
+            $assignments = Assignment::with(['campaign', 'content', 'influencer', 'supervisor'])
                 ->whereIn('status', ['accepted', 'in_progress', 'completed'])
                 ->get();
         }

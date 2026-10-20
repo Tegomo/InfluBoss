@@ -103,6 +103,14 @@ class Assignment extends Model
     }
 
     /**
+     * Intitulé de la mission : titre du contenu à publier, à défaut « Mission #id ».
+     */
+    public function getTitleAttribute(): string
+    {
+        return $this->content?->title ?: 'Mission #'.$this->id;
+    }
+
+    /**
      * Get completion rate attribute (percentage of required posts completed)
      */
     public function getCompletionRateAttribute()
