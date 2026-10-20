@@ -7,6 +7,23 @@
 @endsection
 
 @section('content')
+<!-- Bouton d'export global (visible uniquement pour les admins) -->
+@if(in_array(Auth::user()->role, ['admin', 'super_admin']))
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center justify-content-between">
+            <div>
+                <i class="fas fa-file-excel mr-2"></i>
+                <strong>Export complet des données</strong> - Téléchargez toutes les données du site dans un fichier Excel multi-feuilles
+            </div>
+            <a href="{{ route('admin.export-all') }}" class="btn btn-success">
+                <i class="fas fa-download mr-1"></i> Exporter toutes les données
+            </a>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Info boxes -->
 <div class="row">
     <div class="col-12 col-sm-6 col-md-4">

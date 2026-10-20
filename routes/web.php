@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\GlobalExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,6 +118,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Routes pour les publications
     Route::resource('publications', PublicationController::class);
+    Route::get('/publications-export', [PublicationController::class, 'export'])->name('publications.export');
     Route::post('/publications/{publication}/verify', [PublicationController::class, 'verify'])->name('publications.verify');
     Route::post('/publications/{publication}/reject', [PublicationController::class, 'reject'])->name('publications.reject');
     Route::post('/publications/{publication}/refresh-stats', [PublicationController::class, 'refreshStats'])
@@ -189,6 +191,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics/export', [StatisticsController::class, 'export'])->name('statistics.export');
         Route::get('/statistics/export-pdf', [StatisticsController::class, 'exportPdf'])->name('statistics.export-pdf');
         Route::get('/statistics/export-raw-data', [StatisticsController::class, 'exportRawData'])->name('statistics.export-raw-data');
+
+        // Export global de toutes les données (admins uniquement : le client n'a accès qu'aux statistiques)
+        Route::get('/export-all', [GlobalExportController::class, 'exportAll'])
+            ->middleware('\App\Http\Middleware\RoleMiddleware:admin,super_admin')
+            ->name('export-all');
     });
 });
 

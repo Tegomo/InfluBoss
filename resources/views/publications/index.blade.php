@@ -78,6 +78,9 @@
                 <div class="card-header">
                     <h3 class="card-title">Liste des publications</h3>
                     <div class="card-tools">
+                        <a href="{{ route('publications.export', request()->query()) }}" class="btn btn-success btn-sm mr-2">
+                            <i class="fas fa-file-excel mr-1"></i> Exporter en Excel
+                        </a>
                         @unless(Auth::user()->isClient())
                         <a href="{{ route('publications.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus mr-1"></i> Nouvelle publication

@@ -22,14 +22,31 @@
 @section('content')
 
 <div class="container-fluid">
+    @unless(Auth::user()->isClient())
+    <!-- Alerte pour l'export global (admins uniquement) -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center justify-content-between">
+                <div>
+                    <i class="fas fa-database mr-2"></i>
+                    <strong>Export complet des données</strong> - Téléchargez toutes les données du site (utilisateurs, campagnes, missions, publications, contenus, statistiques, notes) dans un fichier Excel multi-feuilles
+                </div>
+                <a href="{{ route('admin.export-all') }}" class="btn btn-primary">
+                    <i class="fas fa-download mr-1"></i> Exporter toutes les données
+                </a>
+            </div>
+        </div>
+    </div>
+    @endunless
+
     <div class="row">
         <div class="col-sm-12">
             <div class="btn-group float-right gap-2" role="group">
                 <a href="{{ route('admin.statistics.export') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel mr-1"></i> Exporter Excel
+                    <i class="fas fa-file-excel mr-1"></i> Exporter Statistiques Excel
                 </a>
                 <a href="{{ route('admin.statistics.export-pdf') }}" class="btn btn-danger">
-                    <i class="fas fa-file-pdf mr-1"></i> Exporter PDF
+                    <i class="fas fa-file-pdf mr-1"></i> Exporter Statistiques PDF
                 </a>
                 <a href="{{ route('admin.statistics.export-raw-data') }}" class="btn btn-primary">
                     <i class="fas fa-database mr-1"></i> Exporter Données Brutes
